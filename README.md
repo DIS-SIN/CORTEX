@@ -1,4 +1,4 @@
-# <img src="doc_images/cortex-aengine_720.png" width="90px" height="50px"> Data for People
+# <img src="doc_images/cortex-aengine_720.png" width="90px" height="50px" align="bottom"> Data for People
 
 ## A. Brief description
 - No siloes. Data can be streamed to whomever need it, whenever they need it.
@@ -11,4 +11,4 @@
 
 ## C. MVP diagram
 
-![MVP diagram](doc_images/MVP-S1.png){:height="50%" width="50%"}
+![MVP diagram](doc_images/MVP-S1.png)
