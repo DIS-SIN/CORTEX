@@ -10,3 +10,7 @@
 ## MVP 1 diagram
 
 ![MVP 1 logo](doc_images/MVP-S1.png)
+
+## Work in progress
+
+[***CORTEX MVP***](cortex_mvp.html)
