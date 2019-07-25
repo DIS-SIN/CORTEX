@@ -1,4 +1,4 @@
-# <img src="doc_images/cortex-aengine_720.png" width="90px" height="50px" align="bottom"> Data for People
+<img src="doc_images/cortex-aengine_720.png" width="90px" height="50px">
 
 ## A. Brief description
 - No siloes. Data can be streamed to whomever need it, whenever they need it.
