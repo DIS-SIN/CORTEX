@@ -13,4 +13,4 @@
 
 ## Work in progress
 
-[***CORTEX MVP***](cortex_mvp.html)
+[***CORTEX MVP***]( http://htmlpreview.github.io/?https://github.com/DIS-SIN/CORTEX/blob/master/cortex_mvp.html)
