@@ -11,4 +11,6 @@
 
 ## C. MVP diagram
 
-![MVP diagram](doc_images/MVP-S1.png)
+![Logical diagram](doc_images/Component.png)
+
+![Deployment diagram](doc_images/Deployment.png)
