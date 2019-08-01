@@ -13,4 +13,4 @@
 
 ![Logical diagram](doc_images/Component.png)
 
-![Deployment diagram](doc_images/Deployment.png)
+![Physical diagram](doc_images/Deployment.png)
