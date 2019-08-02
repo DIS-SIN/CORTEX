@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: neo4j-core-0-service
+  labels:
+    app: neo4j
+    component: core
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: 	arn:aws:acm:us-east-1:872179490436:certificate/333b3d37-b63a-4a1b-8ea1-e7cb685672ea
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443,7687"
+spec:
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  ports:
+    - protocol: TCP
+      port: 443 
+      targetPort: 7474
+      name: "browser-ssl"
+    - protocol: TCP
+      port: 7687
+      targetPort: 7687
+      name: "bolt"
+  selector:
+    statefulset.kubernetes.io/pod-name: neo4j-core-0
