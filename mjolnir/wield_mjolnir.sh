@@ -1,34 +1,33 @@
 #!/bin/bash
 
-if [ $# -lt 5 ]; then
-  echo "Usage: ./wield_mjolnir.sh <instructions>"
+if [ $# -lt 2 ]; then
+  echo "Usage: ./wield_mjolnir.sh <instructions> <target_directory>"
   echo "Example:"
-  echo "  ./wield_mjolnir.sh yggdrasil_schema_registry yggdrasil_broker:9093 import_ca_post ~/data/ca_post province"
+  echo "  ./wield_mjolnir.sh ~/data/ca_post.ini ~/data/ca_post"
   exit
 fi
 
-YGGDRASIL_SCHEMA_REGISTRY=$1
-YGGDRASIL_BROKER=$2
-TOPIC_PREFIX=$3
-DATA_PATH=$4
-ENTITY_NAME=$5
-SCHEMA=$(cat $DATA_PATH/avro/$ENTITY_NAME.avsc)
-AWK_FM=$(cat $DATA_PATH/awk/$ENTITY_NAME.awk)
-
 res1=$(date +%s)
 
-./manage_topics.sh yggdrasil_zookeeper create $1
+BOLT_HOST_PORT=localhost:7687
+USER_NAME=neo4j
+PASSWORD="##dis@da2019##"
+CONTAINER_NAME=jotunheimr
 
-echo $DATA_PATH/tsv/$ENTITY_NAME.tsv
-echo $AWK_FM
+printf "Creating schema ...\n"
+(docker exec -i $JOTUNHEIMR /var/lib/neo4j/bin/cypher-shell -u $USER_NAME -p $PASSWORD -a bolt://$BOLT_HOST_PORT) < "$2"/conf/schema_for_jotunheimr.cql
+printf "Done.\n"
 
-cat $DATA_PATH/tsv/$ENTITY_NAME.tsv | \
-  awk -F'\t' "$AWK_FM" | \
-  docker exec \
-    --interactive $YGGDRASIL_SCHEMA_REGISTRY kafka-avro-console-producer \
-    --broker-list $YGGDRASIL_BROKER \
-    --topic $TOPIC_PREFIX'_'$ENTITY_NAME \
-    --property value.schema="$SCHEMA"
+printf "Creating sink connector ...\n"
+curl -X POST http://yggdrasil_connect:8083/connectors \
+  -H 'Content-Type:application/json' \
+  -H 'Accept:application/json' \
+  -d @"$2"/conf/jotunheimr_sink.json
+printf "Done.\n"
+
+printf "Producing messages ...\n"
+python producer $1 "$2"/tsv
+printf "Done.\n"
 
 res2=$(date +%s)
 diff=`echo $((res2-res1)) | awk '{printf "%02dh:%02dm:%02ds\n",int($1/3600),int($1%3600/60),int($1%60)}'`
