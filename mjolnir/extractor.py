@@ -57,23 +57,24 @@ def write_rows(rows, file_name, row_info_list):
 def create_contraints(file_name, cons_conf):
     with open(file_name, mode='wt', encoding='utf-8') as text_file:
         count = 0
-        text_file.write('BEGIN\n')
-        for entity_name, entity_info in cons_conf.items():
+        for name, info in cons_conf.items():
             cons = []
-            if 'p' in entity_info:
-                cons.append(P_CONST % entity_name)
-            if 'u' in entity_info:
-                cons.append(U_CONST % (entity_name, entity_info['u']))
-            if 'i' in entity_info:
-                for entity_prop in entity_info['i']:
-                    cons.append(I_CONST % (entity_name, entity_prop))
-            if 'c' in entity_info:
-                cons.append(I_CONST % (entity_name, ','.join(entity_info['c'])))
+            if 'p' in info:
+                cons.append(P_CONST % name)
+            if 'u' in info:
+                cons.append(U_CONST % (name, info['u']))
+            if 'i' in info:
+                for entity_prop in info['i']:
+                    cons.append(I_CONST % (name, entity_prop))
+            if 'c' in info:
+                cons.append(I_CONST % (name, ','.join(info['c'])))
             if cons:
                 for con in cons:
                     text_file.write('%s;\n' % con)
                     count += 1
-        text_file.write('COMMIT\n')
+        text_file.write('CALL db.constraints();\n')
+        text_file.write('CALL db.indexes();\n')
+        text_file.write('CALL db.awaitIndexes();\n')
         print('%s constraints and indexes created.' % count)
 
 
@@ -93,34 +94,41 @@ def create_sink_config(file_name, host_conf, topics_conf):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 5:
-        print('python extractor.py <config> <input> <tsv_dir> <conf_dir>\n')
+    if len(sys.argv) < 4:
+        print('python extractor.py <config> <source_dir> <target_dir>\n')
         exit(1)
 
-    print('python extractor.py', *sys.argv[1:])
+    source_dir = sys.argv[2]
+    target_dir = sys.argv[3]
     config_handler = ConfigHandler(sys.argv[1])
-    lines = load_lines(sys.argv[2])
-    tsv_dir, conf_dir = sys.argv[3], sys.argv[4]
 
-    ent_conf = config_handler.get_eval_option('tsv_extraction', 'entities')
-    for entity_name, entity_info in ent_conf.items():
-        file_name = '%s/%s.tsv' % (tsv_dir, entity_name)
-        rows = create_rows(lines, entity_info)
-        count = write_rows(rows, file_name, entity_info)
-        print('%s [%s] entities extracted.' % (count, entity_name))
+    sources = config_handler.get_eval_option('extraction', 'sources')
+    for source in sources:
+        tsv_files = source['tsv_files']
 
-    rel_conf = config_handler.get_eval_option('tsv_extraction', 'relations')
-    for relation_name, relation_info in rel_conf.items():
-        file_name = '%s/%s.tsv' % (tsv_dir, relation_name)
-        rows = create_rows(lines, relation_info)
-        count = write_rows(rows, file_name, relation_info)
-        print('%s [%s] relations extracted.' % (count, relation_name))
+        for tsv_file in tsv_files:
+            file_name = '%s/%s' % (source_dir, tsv_file['file_name'])
+            lines = load_lines(file_name)
 
-    cons_conf = config_handler.get_eval_option('jotunheimr', 'constraints')
-    file_name = '%s/schema_for_jotunheimr.cql' % conf_dir
-    create_contraints(file_name, cons_conf)
+            ent_conf = tsv_file['entities']
+            for entity_name, entity_info in ent_conf.items():
+                file_name = '%s/%s.tsv' % (target_dir, entity_name)
+                rows = create_rows(lines, entity_info)
+                count = write_rows(rows, file_name, entity_info)
+                print('%s [%s] entities extracted.' % (count, entity_name))
 
-    host_conf = config_handler.get_eval_option('jotunheimr', 'config')
-    topics_conf = config_handler.get_eval_option('jotunheimr', 'topics')
-    file_name = '%s/jotunheimr_sink.json' % conf_dir
-    create_sink_config(file_name, host_conf, topics_conf)
+            rel_conf = tsv_file['relations']
+            for relation_name, relation_info in rel_conf.items():
+                file_name = '%s/%s.tsv' % (target_dir, relation_name)
+                rows = create_rows(lines, relation_info)
+                count = write_rows(rows, file_name, relation_info)
+                print('%s [%s] relations extracted.' % (count, relation_name))
+
+    con_conf = config_handler.get_eval_option('jotunheimr', 'constraints')
+    file_name = '%s/schema_for_jotunheimr.cql' % target_dir
+    create_contraints(file_name, con_conf)
+
+    crd_conf = config_handler.get_eval_option('jotunheimr', 'credentials')
+    tpc_conf = config_handler.get_eval_option('jotunheimr', 'topics')
+    file_name = '%s/jotunheimr_sink.json' % target_dir
+    create_sink_config(file_name, crd_conf, tpc_conf)
