@@ -4,7 +4,7 @@ from config_handler import ConfigHandler
 U_CONST = 'CREATE CONSTRAINT ON (n:%s) ASSERT n.%s IS UNIQUE'
 P_CONST = 'CREATE INDEX ON :%s(point)'
 I_CONST = 'CREATE INDEX ON :%s(%s)'
-TOPIC_PREFIX = "neo4j.topic.cypher."
+TOPIC_PREFIX = "neo4j.topic.cypher"
 SINK_CONFIG = """
 {
   "name": "Neo4jSinkConnector",
@@ -78,11 +78,11 @@ def create_contraints(file_name, cons_conf):
         print('%s constraints and indexes created.' % count)
 
 
-def create_sink_config(file_name, host_conf, topics_conf):
+def create_sink_config(file_name, host_conf, topics_conf, prefix):
     with open(file_name, mode='wt', encoding='utf-8') as text_file:
         topic_list = ','.join([k for k, _ in topics_conf.items()])
         topics = ',\n    '.join([
-            '"%s%s": "%s"' % (TOPIC_PREFIX, k, v)
+            '"%s.%s.%s": "%s"' % (TOPIC_PREFIX, prefix, k, v)
             for k, v in topics_conf.items()
         ])
         text_file.write(SINK_CONFIG % (
@@ -101,6 +101,7 @@ if __name__ == '__main__':
     source_dir = sys.argv[2]
     target_dir = sys.argv[3]
     config_handler = ConfigHandler(sys.argv[1])
+    prefix = config_handler.get_config_option('info', 'prefix')
 
     sources = config_handler.get_eval_option('extraction', 'sources')
     for source in sources:
@@ -126,9 +127,9 @@ if __name__ == '__main__':
 
     con_conf = config_handler.get_eval_option('jotunheimr', 'constraints')
     file_name = '%s/schema_for_jotunheimr.cql' % target_dir
-    create_contraints(file_name, con_conf)
+    create_contraints(file_name, con_conf, )
 
     crd_conf = config_handler.get_eval_option('jotunheimr', 'credentials')
     tpc_conf = config_handler.get_eval_option('jotunheimr', 'topics')
     file_name = '%s/jotunheimr_sink.json' % target_dir
-    create_sink_config(file_name, crd_conf, tpc_conf)
+    create_sink_config(file_name, crd_conf, tpc_conf, prefix)

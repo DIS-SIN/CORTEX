@@ -38,16 +38,10 @@ if [[ $commands == *"m"* ]]; then
 fi
 
 if [[ $commands == *"e"* ]]; then
-  if [[ ! -d "$SOURCE_DIR"/conv ]]; then
-    echo "mkdir -p $SOURCE_DIR/conv"
-    mkdir -p "$SOURCE_DIR"/conv
-    ls -d "$SOURCE_DIR"/conv
-  fi
-
-  for file in $SOURCE_DIR/*.txt
+  for file in $SOURCE_DIR/conv/*.txt
   do
-    echo "iconv -f ISO-8859-1 -t UTF-8 $file > $SOURCE_DIR/conv/$(basename $file)"
-    iconv -f ISO-8859-1 -t UTF-8 "$file" > "$SOURCE_DIR"/conv/$(basename $file)
+    echo "iconv -f ISO-8859-1 -t UTF-8 $file > $SOURCE_DIR/$(basename $file)"
+    iconv -f ISO-8859-1 -t UTF-8 "$file" > "$SOURCE_DIR"/$(basename $file)
   done
   SOURCE_DIR=$SOURCE_DIR/conv
 fi

@@ -6,7 +6,7 @@ from profiler import profile, print_profile_statistics
 
 
 @profile
-def produce_messages(input_file, topic, producer):
+def produce_messages(input_file, prefixed_topic, producer):
     lines = [line.strip('\n') for line in input_file.readlines()]
     headers = lines[0].split('\t')
     count = 0
@@ -14,7 +14,7 @@ def produce_messages(input_file, topic, producer):
         values = line.split('\t')
         message = {headers[i]: values[i] for i in range(0, len(values))}
         count += 1
-        producer.produce(topic=topic, value=message)
+        producer.produce(topic=prefixed_topic, value=message)
         if count % 1000 == 0:
             print('.', end='', flush=True)
             producer.flush()
@@ -31,6 +31,8 @@ if __name__ == "__main__":
     tsv_dir = sys.argv[2]
 
     config = handler.get_eval_option('yggdrasil', 'conf')
+    prefix = config_handler.get_config_option('info', 'prefix')
+
     broker = config['broker']
     schema_registry = config['schema_registry']
 
@@ -57,7 +59,8 @@ if __name__ == "__main__":
     for topic in entity_topics + relation_topics:
         file_name = '%s/%s.tsv' % (tsv_dir, topic)
         with open(file_name, mode='rt', encoding='utf-8') as text_file:
-            print('\nProcess %s ' % file_name)
-            produce_messages(text_file, topic, avro_producer)
+            prefixed_topic = "%s.%s" % (prefix, topic)
+            print('\nProcess %s to %s topic ' % (file_name)
+            produce_messages(text_file, prefixed_topic, avro_producer)
 
     print_profile_statistics()
