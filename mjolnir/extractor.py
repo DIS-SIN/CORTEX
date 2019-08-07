@@ -80,9 +80,11 @@ def create_contraints(file_name, cons_conf):
 
 def create_sink_config(file_name, host_conf, topics_conf, prefix):
     with open(file_name, mode='wt', encoding='utf-8') as text_file:
-        topic_list = ','.join([k for k, _ in topics_conf.items()])
+        topic_list = ','.join([
+            '%s_%s' % (prefix, k) for k, _ in topics_conf.items()
+        ])
         topics = ',\n    '.join([
-            '"%s.%s.%s": "%s"' % (TOPIC_PREFIX, prefix, k, v)
+            '"%s.%s_%s": "%s"' % (TOPIC_PREFIX, prefix, k, v)
             for k, v in topics_conf.items()
         ])
         text_file.write(SINK_CONFIG % (

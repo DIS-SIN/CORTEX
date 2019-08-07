@@ -3,12 +3,11 @@
 if [ $# -lt 3 ]; then
   echo "Usage: ./wield_mjolnir.sh <option> <config_file> <source_directory> <target_directory> <extra_directory>"
   echo "Example:"
-  echo "  ./wield_mjolnir.sh -tsc ./tmp/cp.ini ./tmp"
+  echo "  ./wield_mjolnir.sh -metxsci ./tmp/cp.ini ./tmp"
   echo "Option:"
   echo "  -m: create target directory if none"
-  echo "  -e: convert any *.txt file in source directory to utf-8 encoding and store results in source's conv/ sub-directory"
+  echo "  -e: extract entities and relations into tsv files"
   echo "  -x: copy any *.tsv file from extra directory into target directory"
-  echo "  -t: extract entities and relations into tsv files"
   echo "  -s: run schema file schema_for_jotunheimr.cql if jotunheimr is a local container"
   echo "  -c: configure sink connector"
   echo "  -i: import data by producing messages to yggdrasil"
@@ -33,20 +32,10 @@ if [[ $commands == *"m"* ]]; then
   if [[ ! -d $TARGET_DIR ]]; then
     echo "mkdir -p $TARGET_DIR"
     mkdir -p $TARGET_DIR
-    ls -d $TARGET_DIR
   fi
 fi
 
 if [[ $commands == *"e"* ]]; then
-  for file in $SOURCE_DIR/conv/*.txt
-  do
-    echo "iconv -f ISO-8859-1 -t UTF-8 $file > $SOURCE_DIR/$(basename $file)"
-    iconv -f ISO-8859-1 -t UTF-8 "$file" > "$SOURCE_DIR"/$(basename $file)
-  done
-  SOURCE_DIR=$SOURCE_DIR/conv
-fi
-
-if [[ $commands == *"t"* ]]; then
   echo "python extractor.py $CFG_FILE $SOURCE_DIR $TARGET_DIR"
   python extractor.py $CFG_FILE $SOURCE_DIR $TARGET_DIR
 fi
@@ -63,6 +52,15 @@ if [[ $commands == *"s"* ]]; then
   USER_NAME=`python cfg_option.py $CFG_FILE jotunheimr credentials username`
   PASSWORD=`python cfg_option.py $CFG_FILE jotunheimr credentials password`
   CONTAINER_NAME=`python cfg_option.py $CFG_FILE jotunheimr credentials container_name`
+
+  echo 'Wait for Neo4j ...'
+  end="$((SECONDS+300))"
+  while true; do
+    console_log=`echo "RETURN apoc.version();" | docker exec -i $CONTAINER_NAME /var/lib/neo4j/bin/cypher-shell -u $USER_NAME -p $PASSWORD -a bolt://$BOLT_HOST_PORT | grep 3 | head -n 1`
+    [[ $console_log = *"3.5"*  ]] && break
+    [[ "${SECONDS}" -ge "${end}" ]] && exit 1
+    sleep 1
+  done
 
   echo "(docker exec -i $CONTAINER_NAME /var/lib/neo4j/bin/cypher-shell -u $USER_NAME -p $PASSWORD -a bolt://$BOLT_HOST_PORT) < $TARGET_DIR/schema_for_jotunheimr.cql"
   (docker exec -i $CONTAINER_NAME /var/lib/neo4j/bin/cypher-shell -u $USER_NAME -p $PASSWORD -a bolt://$BOLT_HOST_PORT) < $TARGET_DIR/schema_for_jotunheimr.cql

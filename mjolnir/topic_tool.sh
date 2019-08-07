@@ -1,11 +1,11 @@
 #!/bin/bash
 
 if [ $# -lt 1 ]; then
-  echo "Usage: ./manage_topics.sh <yggdrasil_zookeeper> <COMMAND> <topic>"
-  echo "  ./manage_topics.sh list"
-  echo "  ./manage_topics.sh describe my-topic"
-  echo "  ./manage_topics.sh create my-topic"
-  echo "  ./manage_topics.sh delete my-topic"
+  echo "Usage: ./topic_tool.sh <yggdrasil_zookeeper> <COMMAND> <topic>"
+  echo "  ./topic_tool.sh yggdrasil_zookeeper list"
+  echo "  ./topic_tool.sh yggdrasil_zookeeper describe my-topic"
+  echo "  ./topic_tool.sh yggdrasil_zookeeper create my-topic"
+  echo "  ./topic_tool.sh yggdrasil_zookeeper delete my-topic"
   exit
 fi
 

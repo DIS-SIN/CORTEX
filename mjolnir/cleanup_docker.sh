@@ -8,5 +8,5 @@ fi
 docker-compose -f $1 down
 docker system prune
 docker container rm -f $(docker container ls -aq)
-docker image rm -f $(docker image ls -aq)
+# docker image rm -f $(docker image ls -aq)
 docker system info

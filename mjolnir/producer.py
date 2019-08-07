@@ -19,6 +19,7 @@ def produce_messages(input_file, prefixed_topic, producer):
             print('.', end='', flush=True)
             producer.flush()
     producer.flush()
+    print(' %s.' % count)
 
 
 if __name__ == "__main__":
@@ -31,7 +32,7 @@ if __name__ == "__main__":
     tsv_dir = sys.argv[2]
 
     config = handler.get_eval_option('yggdrasil', 'conf')
-    prefix = config_handler.get_config_option('info', 'prefix')
+    prefix = handler.get_config_option('info', 'prefix')
 
     broker = config['broker']
     schema_registry = config['schema_registry']
@@ -59,8 +60,8 @@ if __name__ == "__main__":
     for topic in entity_topics + relation_topics:
         file_name = '%s/%s.tsv' % (tsv_dir, topic)
         with open(file_name, mode='rt', encoding='utf-8') as text_file:
-            prefixed_topic = "%s.%s" % (prefix, topic)
-            print('\nProcess %s to %s topic ' % (file_name)
+            prefixed_topic = "%s_%s" % (prefix, topic)
+            print('\nProcess [%s] to [%s] topic ' % (file_name, prefixed_topic))
             produce_messages(text_file, prefixed_topic, avro_producer)
 
     print_profile_statistics()
