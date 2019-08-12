@@ -5,7 +5,8 @@ from bs4 import BeautifulSoup
 import requests
 
 GOC_DEPT_URL_PREFIX = 'https://www.canada.ca'
-DEPT_LIST_URI = '/en/government/dept.html'
+EN_DEPT_LIST_URI = '/en/government/dept.html'
+FR_DEPT_LIST_URI = '/fr/gouvernement/min.html'
 headers = ['dept_name', 'dept_url', 'dept_abbr']
 
 
@@ -47,7 +48,12 @@ def write_rows(rows, file_name):
 
 
 if __name__ == '__main__':
-    dept_list = scrappe(GOC_DEPT_URL_PREFIX, DEPT_LIST_URI)
-    file_name = 'goc_dept.tsv'
+    dept_list = scrappe(GOC_DEPT_URL_PREFIX, EN_DEPT_LIST_URI)
+    file_name = 'en_goc_dept.tsv'
     count = write_rows(dept_list, file_name)
-    print('Scrapped %d departments into [goc_dept.tsv] file.' % count)
+    print('Scrapped %d departments into [en_goc_dept.tsv] file.' % count)
+
+    dept_list = scrappe(GOC_DEPT_URL_PREFIX, FR_DEPT_LIST_URI)
+    file_name = 'fr_goc_dept.tsv'
+    count = write_rows(dept_list, file_name)
+    print('Scrapped %d departments into [fr_goc_dept.tsv] file.' % count)
