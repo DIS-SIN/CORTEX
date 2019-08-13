@@ -3,16 +3,20 @@ import traceback
 
 from bs4 import BeautifulSoup
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+import urllib
 
-GOC_DEPT_URL_PREFIX = 'https://www.canada.ca'
-EN_DEPT_LIST_URI = '/en/government/dept.html'
-FR_DEPT_LIST_URI = '/fr/gouvernement/min.html'
-headers = ['dept_name', 'dept_url', 'dept_abbr']
+URL_PREFIX = 'https://www.canada.ca'
+EN_URI = '/en/government/dept.html'
+FR_URI = '/fr/gouvernement/min.html'
+
+headers = ['name', 'url', '']
 
 
-def scrappe(prefix, uri):
-
+def scrappe(prefix, uri, lang='en'):
     dept_list = []
+
     try:
         text = requests.get(prefix + uri).text
         soup = BeautifulSoup(text, 'html.parser')
@@ -24,13 +28,14 @@ def scrappe(prefix, uri):
             for td in td_list:
                 a_hrefs = td.find_all('a')
                 if a_hrefs:
-                    dept['dept_url'] = a_hrefs[0]['href']
-                    if not a_hrefs[0]['href'].startswith('http'):
-                        dept['dept_url'] = prefix + a_hrefs[0]['href']
-                    dept['dept_name'] = a_hrefs[0].text.strip()
+                    url = a_hrefs[0]['href']
+                    if not url.startswith('http'):
+                        url = URL_PREFIX + url
+                    dept['url'] = url
+                    dept['name'] = a_hrefs[0].text.strip()
                 else:
                     if td.text.strip():
-                        dept['dept_abbr'] = td.text.strip()
+                        dept['abbr'] = td.text.strip()
             dept_list.append(dept)
 
     except Exception:
@@ -48,12 +53,12 @@ def write_rows(rows, file_name):
 
 
 if __name__ == '__main__':
-    dept_list = scrappe(GOC_DEPT_URL_PREFIX, EN_DEPT_LIST_URI)
+    en_dept_list = scrappe(URL_PREFIX, EN_URI)
+    print('Scrapped %d [en] departments.' % len(en_dept_list))
     file_name = 'en_goc_dept.tsv'
-    count = write_rows(dept_list, file_name)
-    print('Scrapped %d departments into [en_goc_dept.tsv] file.' % count)
+    count = write_rows(en_dept_list, file_name)
 
-    dept_list = scrappe(GOC_DEPT_URL_PREFIX, FR_DEPT_LIST_URI)
+    fr_dept_list = scrappe(URL_PREFIX, FR_URI)
+    print('Scrapped %d [fr] departments.' % len(fr_dept_list))
     file_name = 'fr_goc_dept.tsv'
-    count = write_rows(dept_list, file_name)
-    print('Scrapped %d departments into [fr_goc_dept.tsv] file.' % count)
+    count = write_rows(fr_dept_list, file_name)

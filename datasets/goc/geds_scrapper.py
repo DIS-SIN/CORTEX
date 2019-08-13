@@ -164,17 +164,11 @@ def scrapper(pid, in_queue, out_queue, stop_event):
 def writer(in_queue, out_queue, info_queue, start_event, stop_event):
     # print('Start WRITER.')
 
-    if os.path.isfile(ENT_FILE_NAME):
-        ent_file = open(ENT_FILE_NAME, mode='at', encoding='utf-8')
-    else:
-        ent_file = open(ENT_FILE_NAME, mode='wt', encoding='utf-8')
-        ent_file.write('\t'.join(headers) + '\n')
+    ent_file = open(ENT_FILE_NAME, mode='wt', encoding='utf-8')
+    ent_file.write('\t'.join(headers) + '\n')
 
-    if os.path.isfile(REL_FILE_NAME):
-        rel_file = open(REL_FILE_NAME, mode='at', encoding='utf-8')
-    else:
-        rel_file = open(REL_FILE_NAME, mode='wt', encoding='utf-8')
-        rel_file.write('\t'.join(['parent_org_dn', 'child_org_dn']) + '\n')
+    rel_file = open(REL_FILE_NAME, mode='wt', encoding='utf-8')
+    rel_file.write('\t'.join(['parent_org_dn', 'child_org_dn']) + '\n')
 
     ent_count = 0
     rel_count = 0
