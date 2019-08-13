@@ -129,11 +129,6 @@ def get_words(name):
 
 
 if __name__ == '__main__':
-    # print(get_words('Superintendent of Bankruptcy Canada (Office of the)'))
-    # print(get_words('Prime Minister of Canada'))
-    # print(get_words("Prime Minister's Office"))
-    # exit(0)
-
     geds_org_dict, geds_en_abr_dict, geds_fr_abr_dict = load_geds_orgs(GEDS_ORG_FILE)
     print('Loaded %d orgs by org_dn.' % len(geds_org_dict))
     print('Loaded %d orgs by [en] abbr.' % len(geds_en_abr_dict))
@@ -147,16 +142,17 @@ if __name__ == '__main__':
     for _, org in geds_org_dict.items():
         if not org['is_dept']:
             continue
-        if org['org_en_name'] in goc_en_dep_dict:
-            common_en_dept_names[org['org_en_name']] = org
-        if org['org_en_name'] + ' (Department of)' in goc_en_dep_dict:
-            common_en_dept_names[org['org_en_name'] + ' (Department of)'] = org
-        if org['org_en_name'] + ' of Canada' in goc_en_dep_dict:
-            org['org_en_name'] = org['org_en_name'] + ' of Canada'
-            common_en_dept_names[org['org_en_name']] = org
+        o_name = org['org_en_name']
+        if o_name in goc_en_dep_dict:
+            common_en_dept_names[o_name] = org
+        if o_name + ' (Department of)' in goc_en_dep_dict:
+            common_en_dept_names[o_name + ' (Department of)'] = org
+        if o_name + ' of Canada' in goc_en_dep_dict:
+            org['org_en_name'] = o_name + ' of Canada'
+            common_en_dept_names[o_name] = org
         if org['org_en_name'] + ' Canada' in goc_en_dep_dict:
-            org['org_en_name'] = org['org_en_name'] + ' Canada'
-            common_en_dept_names[org['org_en_name']] = org
+            org['org_en_name'] = o_name + ' Canada'
+            common_en_dept_names[o_name] = org
 
     print('common_en_dept_names = %s' % len(common_en_dept_names))
     for d_name in sorted(common_en_dept_names.keys()):

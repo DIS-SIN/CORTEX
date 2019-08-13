@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import csv
 import traceback
 
 from bs4 import BeautifulSoup
@@ -11,11 +12,14 @@ URL_PREFIX = 'https://www.canada.ca'
 EN_URI = '/en/government/dept.html'
 FR_URI = '/fr/gouvernement/min.html'
 
-headers = ['name', 'url', '']
+headers = [
+    'en_name', 'en_url', 'en_abbr',
+    'fr_name', 'fr_url', 'fr_abbr',
+]
 
 
 def scrappe(prefix, uri, lang='en'):
-    dept_list = []
+    dept_dict = dict()
 
     try:
         text = requests.get(prefix + uri).text
@@ -36,10 +40,24 @@ def scrappe(prefix, uri, lang='en'):
                 else:
                     if td.text.strip():
                         dept['abbr'] = td.text.strip()
-            dept_list.append(dept)
+            print(dept['name'], dept)
+            dept_dict[dept['name']] = dept
 
     except Exception:
         traceback.print_exc()
+
+    return dept_dict
+
+
+def load_rows(file_name):
+    dept_list = []
+
+    with open(file_name, mode='rt', encoding='utf-8') as tsv_file:
+        reader = csv.DictReader(tsv_file, delimiter='\t')
+        for row in reader:
+            dept_list.append({
+                k.strip(): row[k].strip() for k in headers if k in row
+            })
 
     return dept_list
 
@@ -53,12 +71,14 @@ def write_rows(rows, file_name):
 
 
 if __name__ == '__main__':
-    en_dept_list = scrappe(URL_PREFIX, EN_URI)
-    print('Scrapped %d [en] departments.' % len(en_dept_list))
-    file_name = 'en_goc_dept.tsv'
-    count = write_rows(en_dept_list, file_name)
+    dept_list = load_rows('goc_dept_bilingual.tsv')
+    print('Loaded %d departments.' % len(dept_list))
 
-    fr_dept_list = scrappe(URL_PREFIX, FR_URI)
-    print('Scrapped %d [fr] departments.' % len(fr_dept_list))
-    file_name = 'fr_goc_dept.tsv'
-    count = write_rows(fr_dept_list, file_name)
+    for uri, lang in [ [EN_URI, 'en'], [FR_URI, 'fr']]:
+        dept_dict = scrappe(URL_PREFIX, uri)
+        print('Scrapped %d departments from %s.' % (len(dept_dict), uri))
+        for dept in dept_list:
+            dept['%s_url' % lang] = dept_dict[dept['%s_name' % lang]]['url']
+
+    file_name = 'goc_depts.tsv'
+    count = write_rows(dept_list, file_name)
