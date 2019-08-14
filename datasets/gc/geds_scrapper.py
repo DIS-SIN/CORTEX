@@ -204,20 +204,6 @@ def collector(in_queue, out_queue, write_queue, start_event, stop_event):
     write_queue.put([entity_rows, relation_rows])
 
 
-def writer(entity_rows, relation_rows):
-    with open(ENT_FILE_NAME, mode='wt', encoding='utf-8') as ent_file:
-        ent_file.write('\t'.join(headers) + '\n')
-        for row in entity_rows:
-            ent_file.write(row)
-
-    with open(REL_FILE_NAME, mode='wt', encoding='utf-8') as rel_file:
-        rel_file.write('\t'.join(['parent_org_dn', 'child_org_dn']) + '\n')
-        for row in relation_rows:
-            rel_file.write(row)
-
-    print('Wrote to file.')
-
-
 def get_dept_list():
     url = BASE_URL + LANG_PATH['en'] + LIST_PAGE
     body = get_content_body(0, requests_retry_session(), url)
@@ -246,6 +232,12 @@ if __name__ == '__main__':
     if len(sys.argv) >= 4:
         start_org_dn = sys.argv[2]
         start_org_en_name = sys.argv[3]
+
+    ent_file = open(ENT_FILE_NAME, mode='wt', encoding='utf-8')
+    ent_file.write('\t'.join(headers) + '\n')
+
+    rel_file = open(REL_FILE_NAME, mode='wt', encoding='utf-8')
+    rel_file.write('\t'.join(['parent', 'child']) + '\n')
 
     dept_list = get_dept_list()
     stop_processing = False
@@ -294,5 +286,14 @@ if __name__ == '__main__':
         if stop_processing:
             break
 
-        writer(entity_rows, relation_rows)
+        for row in entity_rows:
+            ent_file.write(row)
+        ent_file.flush()
+        for row in relation_rows:
+            rel_file.write(row)
+        rel_file.flush()
+
         print('[DONE] %s.\n' % start_org_en_name)
+
+    ent_file.close()
+    rel_file.close()
