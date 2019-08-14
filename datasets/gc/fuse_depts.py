@@ -6,8 +6,7 @@ import urllib.parse
 GEDS_ORG_FILE='geds_orgs.tsv'
 GEDS_REL_FILE='geds_rels.tsv'
 
-GOC_EN_DEPT_FILE='en_goc_dept.tsv'
-GOC_FR_DEPT_FILE='fr_goc_dept.tsv'
+GOC_DEPT_FILE='goc_depts.tsv'
 
 GEDS_ORG_UID = 'org_dn'
 GEDS_ORG_HRS = [
@@ -16,6 +15,10 @@ GEDS_ORG_HRS = [
 ]
 GEDS_EXT_HRS = [
     'is_dept', 'en_abbr', 'fr_abbr'
+]
+GOC_DEPT_HRS = [
+    'en_name', 'en_url', 'en_abbr',
+    'fr_name', 'fr_url', 'fr_abbr',
 ]
 DIFFERENTIATORS = {
     'library', 'vessels',
@@ -73,8 +76,7 @@ DIFFERENTIATORS = {
 # ]
 
 def load_geds_orgs(file_name):
-    geds_org_dict = dict()
-    geds_en_abr_dict, geds_fr_abr_dict = dict(), dict()
+    geds_org_dict, geds_en_abr_dict = dict(), dict()
 
     with open(file_name, mode='rt', encoding='utf-8') as tsv_file:
         reader = csv.DictReader(tsv_file, delimiter='\t')
@@ -93,25 +95,23 @@ def load_geds_orgs(file_name):
 
             if org_dict['is_dept']:
                 geds_en_abr_dict[org_dict['en_abbr']] = row['org_en_name']
-                geds_fr_abr_dict[org_dict['fr_abbr']] = row['org_fr_name']
 
-        return geds_org_dict, geds_en_abr_dict, geds_fr_abr_dict
+        return geds_org_dict, geds_en_abr_dict
 
 
 def load_goc_deps(file_name):
-    goc_dep_dict, goc_abr_dict = dict(), dict()
+    goc_dep_dict = dict()
 
     with open(file_name, mode='rt', encoding='utf-8') as tsv_file:
         reader = csv.DictReader(tsv_file, delimiter='\t')
-        for row in reader:
-            name, abbr = row['name'], row['abbr']
-            goc_dep_dict[name] = abbr
-            if not abbr:
-                goc_dep_dict[name] = None
-                continue
-            goc_abr_dict[abbr] = name
+        goc_dep_dict = {
+            row['en_name']: {
+                k: row[k] if row[k] else None for k in GOC_DEPT_HRS
+            }
+            for row in reader
+        }
 
-    return goc_dep_dict, goc_abr_dict
+    return goc_dep_dict
 
 
 def get_words(name):
@@ -128,87 +128,120 @@ def get_words(name):
     return r
 
 
+def match_by_words(dept_dict, dn, org):
+
+
+def match_by_name(dept_dict, dn, org):
+    o_name = org['org_en_name']
+
+    dept_name = o_name
+    if dept_name in dept_dict:
+        return True, o_name
+
+    dept_name = o_name + ' (Department of)'
+    if dept_name in dept_dict:
+        return True, dept_name
+
+    dept_name = o_name + ' of Canada'
+    if dept_name in dept_dict:
+        return True, dept_name
+
+    dept_name = o_name + ' Canada'
+    if dept_name in dept_dict:
+        return True, dept_name
+
+    if o_name.startswith('Office of the'):
+        dept_name = o_name[len('Office of the'):].strip() + ' (Office of the)'
+        if dept_name in dept_dict:
+            return True, dept_name
+
+        dept_name = o_name[len('Office of the'):].strip() + ' Canada (Office of the)'
+        if dept_name in dept_dict:
+            return True, dept_name
+
+    if o_name.endswith(', Office of the'):
+        dept_name = o_name[0:len(o_name)-len(', Office of the'):].strip() + ' (Office of the)'
+        if dept_name in dept_dict:
+            return True, dept_name
+
+    return False, None
+
+
+def update_depts(matches, dept_dict):
+    print('Matches = %s' % len(matches))
+
+    for dept_name in sorted(matches.keys()):
+        org = matches[dept_name]
+        print('[%s] %s -> [%s] %s' % (
+            dept_name, dept_dict[dept_name]['en_abbr'],
+            org['org_en_name'], org['en_abbr']
+        ))
+        dept_dict.pop(dept_name)
+
+
+def match_depts(dept_dict, geds_dict, match_func):
+    matches = dict()
+
+    for dn, org in geds_dict.items():
+        is_match, dept_name = match_func(dept_dict, dn, org)
+        if is_match:
+            matches[dept_name] = org
+
+    update_depts(matches, dept_dict)
+
+
+def show_remaining_depts(dept_dict, details=False):
+    print('Remains = %s' % len(dept_dict))
+    if not details:
+        return
+
+    for k in sorted(dept_dict.keys()):
+        print('--- %s %s' % (k, dept_dict[k]['en_abbr']))
+
+
 if __name__ == '__main__':
-    geds_org_dict, geds_en_abr_dict, geds_fr_abr_dict = load_geds_orgs(GEDS_ORG_FILE)
+    geds_org_dict, geds_en_abr_dict = load_geds_orgs(GEDS_ORG_FILE)
     print('Loaded %d orgs by org_dn.' % len(geds_org_dict))
-    print('Loaded %d orgs by [en] abbr.' % len(geds_en_abr_dict))
-    print('Loaded %d orgs by [fr] abbr.' % len(geds_fr_abr_dict))
+    print('Loaded %d deps by [en] abbr.' % len(geds_en_abr_dict))
 
-    goc_en_dep_dict, goc_en_abr_dict = load_goc_deps(GOC_EN_DEPT_FILE)
-    print('Loaded %d deps by [en] name.' % len(goc_en_dep_dict))
-    print('Loaded %d deps by [en] abbr.' % len(goc_en_abr_dict))
+    goc_dep_dict = load_goc_deps(GOC_DEPT_FILE)
+    print('Loaded %d deps by [en] name.' % len(goc_dep_dict))
 
-    common_en_dept_names = dict()
-    for _, org in geds_org_dict.items():
-        if not org['is_dept']:
-            continue
-        o_name = org['org_en_name']
-        if o_name in goc_en_dep_dict:
-            common_en_dept_names[o_name] = org
-        if o_name + ' (Department of)' in goc_en_dep_dict:
-            common_en_dept_names[o_name + ' (Department of)'] = org
-        if o_name + ' of Canada' in goc_en_dep_dict:
-            org['org_en_name'] = o_name + ' of Canada'
-            common_en_dept_names[o_name] = org
-        if org['org_en_name'] + ' Canada' in goc_en_dep_dict:
-            org['org_en_name'] = o_name + ' Canada'
-            common_en_dept_names[o_name] = org
+    print(match_by_name)
+    match_depts(goc_dep_dict, geds_org_dict, match_by_name)
+    show_remaining_depts(goc_dep_dict, True)
 
-    print('common_en_dept_names = %s' % len(common_en_dept_names))
-    for d_name in sorted(common_en_dept_names.keys()):
-        org = common_en_dept_names[d_name]
-        print('%s %s -> %s %s' % (d_name, goc_en_dep_dict[d_name], org['org_en_name'], org['en_abbr']))
-        goc_en_dep_dict.pop(d_name)
-    print('remains = %s' % len(goc_en_dep_dict))
-
-    common_en_org_names = dict()
-    for dn, org in geds_org_dict.items():
-        o_name = org['org_en_name']
-        if o_name in goc_en_dep_dict:
-            if goc_en_dep_dict[o_name]:
-                org['en_abbr'] = goc_en_dep_dict[o_name]
-            common_en_org_names[o_name] = org
-
-    print('common_en_org_names = %s' % len(common_en_org_names))
-    for d_name in sorted(common_en_org_names.keys()):
-        org = common_en_org_names[d_name]
-        print('%s %s -> %s %s' % (d_name, goc_en_dep_dict[d_name], org['org_en_name'], org['en_abbr']))
-        goc_en_dep_dict.pop(d_name)
-    print('remains = %s' % len(goc_en_dep_dict))
-
-    dep_name_dict = { k: get_words(k) for k in goc_en_dep_dict.keys() }
-    common_en_mix_names = dict()
-    for _, org in geds_org_dict.items():
-        o_name = org['org_en_name']
-        if o_name in common_en_dept_names or o_name in common_en_org_names:
-            continue
-
-        o_name_set = get_words(o_name)
-        o_cnt = len(o_name_set)
-        for d_name, d_name_set in dep_name_dict.items():
-            common = o_name_set.intersection(d_name_set)
-            if not common:
-                continue
-            union = o_name_set.union(d_name_set).difference(common)
-            if union.intersection(DIFFERENTIATORS):
-                continue
-
-            c_cnt = len(common)
-            d_cnt = len(d_name_set)
-            if 2.0 * c_cnt > 0.85 * (d_cnt + o_cnt):
-                if all([c == ' ' or c.isupper() for c in o_name]):
-                    org['org_en_name'] = d_name
-                if goc_en_dep_dict[d_name]:
-                    org['en_abbr'] = goc_en_dep_dict[d_name]
-                common_en_mix_names[d_name] = org
-                break
-
-    print('common_en_mix_names = %s' % len(common_en_mix_names))
-    for d_name in sorted(common_en_mix_names.keys()):
-        org = common_en_mix_names[d_name]
-        print('%s %s -> %s %s' % (d_name, goc_en_dep_dict[d_name], org['org_en_name'], org['en_abbr']))
-        goc_en_dep_dict.pop(d_name)
-    print('remains = %s' % len(goc_en_dep_dict))
-
-    for k in sorted(goc_en_dep_dict.keys()):
-        print('%s %s' % (k, goc_en_dep_dict[k]))
+    # dep_name_dict = { k: get_words(k) for k in goc_en_dep_dict.keys() }
+    # common_en_mix_names = dict()
+    # for _, org in geds_org_dict.items():
+    #     o_name = org['org_en_name']
+    #     if o_name in common_en_dept_names or o_name in common_en_org_names:
+    #         continue
+    #
+    #     o_name_set = get_words(o_name)
+    #     o_cnt = len(o_name_set)
+    #     for d_name, d_name_set in dep_name_dict.items():
+    #         common = o_name_set.intersection(d_name_set)
+    #         if not common:
+    #             continue
+    #         union = o_name_set.union(d_name_set).difference(common)
+    #         if union.intersection(DIFFERENTIATORS):
+    #             continue
+    #
+    #         c_cnt = len(common)
+    #         d_cnt = len(d_name_set)
+    #         if 2.0 * c_cnt > 0.85 * (d_cnt + o_cnt):
+    #             if all([c == ' ' or c.isupper() for c in o_name]):
+    #                 org['org_en_name'] = d_name
+    #             if goc_en_dep_dict[d_name]:
+    #                 org['en_abbr'] = goc_en_dep_dict[d_name]
+    #             common_en_mix_names[d_name] = org
+    #             break
+    #
+    # print('common_en_mix_names = %s' % len(common_en_mix_names))
+    # for d_name in sorted(common_en_mix_names.keys()):
+    #     org = common_en_mix_names[d_name]
+    #     print('%s %s -> %s %s' % (d_name, goc_en_dep_dict[d_name], org['org_en_name'], org['en_abbr']))
+    #     goc_en_dep_dict.pop(d_name)
+    # print('remains = %s' % len(goc_en_dep_dict))
+    #
