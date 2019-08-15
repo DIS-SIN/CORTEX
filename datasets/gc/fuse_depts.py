@@ -75,7 +75,7 @@ PARENT_MAPPINGS = {
 
 
 def load_geds_orgs(file_name):
-    geds_org_dict, geds_en_abr_dict = dict(), dict()
+    geds_org_dict = dict(), dict()
 
     with open(file_name, mode='rt', encoding='utf-8') as tsv_file:
         reader = csv.DictReader(tsv_file, delimiter='\t')
@@ -92,10 +92,7 @@ def load_geds_orgs(file_name):
             })
             geds_org_dict[quoted_org_dn] = org_dict
 
-            if org_dict['is_dept']:
-                geds_en_abr_dict[org_dict['en_abbr']] = row['org_en_name']
-
-        return geds_org_dict, geds_en_abr_dict
+        return geds_org_dict
 
 
 def load_goc_deps(file_name):
@@ -111,6 +108,12 @@ def load_goc_deps(file_name):
         }
 
     return goc_dep_dict
+
+
+def extend_entity(entity, dept, ignore=[]):
+    for k in GOC_DEPT_HRS:
+        if k not in ignore and k in dept and dept[k]:
+            entity[k] = dept[k]
 
 
 def get_words(name):
@@ -144,9 +147,6 @@ def match_by_words(dept_dict, dn, org):
         if 2.0 * c_cnt > COMMON_INDEX * (d_cnt + o_cnt):
             if all([c == ' ' or c.isupper() for c in o_name]):
                 org['org_en_name'] = dept_name
-            if dept['en_abbr']:
-                org['en_abbr'] = dept['en_abbr']
-                org['fr_abbr'] = dept['fr_abbr']
             return True, dept_name
 
     return False, None
@@ -233,6 +233,8 @@ def match_depts(dept_dict, geds_dict, match_func):
     for dn, org in geds_dict.items():
         is_match, dept_name = match_func(dept_dict, dn, org)
         if is_match:
+            org['org_fr_name'] = dept_dict[dept_name]['fr_name']
+            extend_entity(org, dept_dict[dept_name], ['en_name', 'fr_name'])
             matches[dept_name] = org
 
     update_depts(matches, dept_dict)
@@ -248,7 +250,7 @@ def show_remaining_depts(dept_dict, details=False):
 
 
 if __name__ == '__main__':
-    geds_org_dict, geds_en_abr_dict = load_geds_orgs(GEDS_ORG_FILE)
+    geds_org_dict = load_geds_orgs(GEDS_ORG_FILE)
     print('Loaded %d orgs by org_dn.' % len(geds_org_dict))
     print('Loaded %d deps by [en] abbr.' % len(geds_en_abr_dict))
 
@@ -260,3 +262,34 @@ if __name__ == '__main__':
 
     match_depts(goc_dep_dict, geds_org_dict, match_by_words)
     show_remaining_depts(goc_dep_dict, True)
+
+    ent_file = open(GEDS_ORG_FILE.replace('.tsv', '-2.tsv'), mode='wt', encoding='utf-8')
+    ent_file.write('\t'.join(headers) + '\n')
+    for dn, org in geds_dict.items():
+        row = '\t'.join([item['entity'][k] for k in GEDS_ORG_HRS + GEDS_EXT_HRS]) + '\n'
+        ent_file.write(row)
+
+    rel_file = open(GEDS_REL_FILE, mode='at', encoding='utf-8')
+    for dept_name, dept in goc_dep_dict.items():
+        org = dict()
+        o_name = dept['en_name']
+        org['org_en_name'] = o_name
+        org['org_fr_name'] = dept['fr_name']
+        extend_entity(org, dept, ['en_name', 'fr_name'])
+        org['org_lc_addr'] = ''
+        org['org_lc_city'] = ''
+        org['org_lc_pc'] = ''
+        org['org_lc_ctry'] = ''
+        org['is_dept'] = False
+        if o_name in ['Parliament of Canada', 'Great Lakes Pilotage Authority Canada']:
+            org['is_dept'] = True
+        org['org_dn'] = urllib.parse.quote('ou=%s-%s, ' % (org['en_abbr'], org['fr_abbr'])) + PARENT_MAPPINGS[o_name]
+
+        row = '\t'.join([item['entity'][k] for k in GEDS_ORG_HRS + GEDS_EXT_HRS]) + '\n'
+        ent_file.write(row)
+
+        row = '\t'.join([PARENT_MAPPINGS[o_name], org['org_dn']]) + '\n'
+        rel_file.write(row)
+
+    ent_file.close()
+    rel_file.close()
