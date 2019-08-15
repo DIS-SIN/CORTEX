@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import csv
+import re
 import traceback
 import urllib.parse
 
@@ -24,56 +25,54 @@ DIFFERENTIATORS = {
     'library', 'vessels',
     'operations', 'atlantic', 'valcartier', 'toronto', 'ottawa', 'suffield'
 }
+REGEX_REPLACE = [
+    { 'regex': re.compile('\(office of the\)', re.UNICODE), 'sub': '' },
+    { 'regex': re.compile('office', re.UNICODE), 'sub': '' },
+    { 'regex': re.compile(' of canada', re.UNICODE), 'sub': '' },
+    { 'regex': re.compile('canadian ', re.UNICODE), 'sub': '' },
+    { 'regex': re.compile("'s", re.UNICODE), 'sub': '' },
+    { 'regex': re.compile("'", re.UNICODE), 'sub': '' },
+    { 'regex': re.compile("\-", re.UNICODE), 'sub': ' ' },
+]
+IGNORED_WORDS = [
+    'of', 'the', 'and', 'for'
+]
+COMMON_INDEX = 0.85
 
-# DIRECT_MAPPINGS = {
-#     'Ombudsman for the Department of National Defence and the Canadian Forces (Office of the)': ['Ombudsman': 'ou%3DOMBUDSMAN-OMBUDSMAN%2COU%3DDND-MDN%2CO%3DGC%2CC%3DCA'],
-# }
-#
-# Natural Sciences and Engineering Research Canada NSERC
-# Public Service Labour Relations and Employment Board PSLREB
-#
-# PARENT_MAPPINGS = {
-#     'Bank of Canada Museum': ['Bank of Canada', 'ou%3DBOC-BDC%2C+o%3DGC%2C+c%3DCA'],
-#     'Blue Water Bridge Canada': ['The Federal Bridge Corporation Limited', 'ou%3DFBCL-SPFL%2C+o%3DGC%2C+c%3DCA'],
-#     'Business Development Bank of Canada': ['Innovation, Science and Economic Development Canada', 'ou%3DISED-ISDE%2C+o%3DGC%2C+c%3DCA'],
-#     'Canada Development Investment Corporation': ['Finance Canada', 'ou%3DFIN-FIN%2C+o%3DGC%2C+c%3DCA'],
-#     'Canada Employment Insurance Commission': ['Employment and Social Development Canada', 'ou%3DESDC-EDSC%2C+o%3DGC%2C+c%3DCA'],
-#     'Canada Firearms Centre': ['CANADIAN FIREARMS PROGRAM', 'ou%3DCFP-PCAF%2C+ou%3DDCSPS-SCSPS%2C+ou%3DRCMP-GRC%2C+o%3DGC%2C+c%3DCA	CANADIAN FIREARMS PROGRAM'],
-#     'Canada Infrastructure Bank': ['Infrastructure Canada', 'ou%3DINFC-INFC%2C+o%3DGC%2C+c%3DCA'],
-#     'Canada Lands Company Limited': ['Public Services and Procurement Canada', 'OU%3DPSPC-SPAC%2CO%3DGC%2CC%3DCA'],
-#     'Canada Pension Plan Investment Board': ['Finance Canada', 'ou%3DFIN-FIN%2C+o%3DGC%2C+c%3DCA'],
-#     'Canada Post': ['Transport Canada', 'ou%3DTC-TC%2C+o%3DGC%2C+c%3DCA'],
-#     'Canada Research Chairs': ['Tri-agency Institutional Programs Secretariat', 'OU%3DSPIIE-TIPS%2COU%3DRPD-DPR%2COU%3DSSHRC-CRSH%2CO%3DGC%2CC%3DCA'],
-#     'Canadian Accessibility Standards Development Organization': ['Employment and Social Development Canada', 'ou%3DESDC-EDSC%2C+o%3DGC%2C+c%3DCA'],
-#     'Canadian Coast Guard': ['Office of the Commissioner, Canadian Coast Guard', 'ou%3DCOMMCCG-COMMGCC%2C+ou%3DDM-SM%2C+ou%3DDFO-MPO%2C+o%3DGC%2C+c%3DCA'],
-#     'Canadian Race Relations Foundation': ['Canadian Heritage', 'ou%3DPCH-PCH%2C+o%3DGC%2C+c%3DCA'],
-#     'Canadian Trade Commissioner Service': ['Global Affairs Canada', 'ou%3DGAC-AMC%2CO%3DGC%2CC%3DCA'],
-#     'Crown-Indigenous Relations and Northern Affairs Canada': ['Indigenous Services Canada', 'ou%3DISC-SAC%2Co%3DGC%2Cc%3DCA'],
-#     'Historic Sites and Monuments Board of Canada': ['Parks Canada', 'OU%3DPC-PC%2CO%3DGC%2CC%3DCA'],
-#     'Industrial Technologies Office': ['Innovation, Science and Economic Development Canada', 'ou%3DISED-ISDE%2C+o%3DGC%2C+c%3DCA'],
-#     'Judicial Compensation and Benefits Commission': ['Justice Canada', 'ou%3DJUS-JUS%2C+o%3DGC%2C+c%3DCA'],
-#     'Labour Program': ['Employment and Social Development Canada', 'ou%3DESDC-EDSC%2C+o%3DGC%2C+c%3DCA'],
-#     'Royal Military College of Canada': ['National Defence', 'OU%3Ddnd-mdn%2CO%3Dgc%2CC%3Dca'],
-#     'Service Canada': ['Employment and Social Development Canada', 'ou%3DESDC-EDSC%2C+o%3DGC%2C+c%3DCA'],
-#     'Superintendent of Bankruptcy Canada (Office of the)': ['Innovation, Science and Economic Development Canada', 'ou%3DISED-ISDE%2C+o%3DGC%2C+c%3DCA'],
-# }
-#
-# REVERSE_MAPPINGS = {
-#     'Destination Canada': 'Canadian Tourism Commission',
-# }
-#
-# NEW_MAPPINGS = [
-#     'Environmental Protection Review Canada',
-#     'Export Development Canada',
-#     'Freshwater Fish Marketing Corporation',
-#     'Great Lakes Pilotage Authority Canada',
-#     'Marine Atlantic',
-#     'Parliament of Canada',
-#     'Public Sector Pension Investment Board',
-#     'Ridley Terminals Inc.',
-#     'VIA Rail Canada',
-#     'Windsor-Detroit Bridge Authority',
-# ]
+PARENT_MAPPINGS = {
+    'Bank of Canada Museum': 'ou%3DBOC-BDC%2C+o%3DGC%2C+c%3DCA',
+    'Blue Water Bridge Canada': 'ou%3DFBCL-SPFL%2C+o%3DGC%2C+c%3DCA',
+    'Business Development Bank of Canada': 'ou%3DISED-ISDE%2C+o%3DGC%2C+c%3DCA',
+    'Canada Development Investment Corporation': 'ou%3DFIN-FIN%2C+o%3DGC%2C+c%3DCA',
+    'Canada Employment Insurance Commission': 'ou%3DESDC-EDSC%2C+o%3DGC%2C+c%3DCA',
+    'Canada Firearms Centre': 'ou%3DCFP-PCAF%2C+ou%3DDCSPS-SCSPS%2C+ou%3DRCMP-GRC%2C+o%3DGC%2C+c%3DCA',
+    'Canada Infrastructure Bank': 'ou%3DINFC-INFC%2C+o%3DGC%2C+c%3DCA',
+    'Canada Lands Company Limited': 'OU%3DPSPC-SPAC%2CO%3DGC%2CC%3DCA',
+    'Canada Pension Plan Investment Board': 'ou%3DFIN-FIN%2C+o%3DGC%2C+c%3DCA',
+    'Canada Post': 'ou%3DTC-TC%2C+o%3DGC%2C+c%3DCA',
+    'Canada Research Chairs':'OU%3DSPIIE-TIPS%2COU%3DRPD-DPR%2COU%3DSSHRC-CRSH%2CO%3DGC%2CC%3DCA',
+    'Canadian Accessibility Standards Development Organization': 'ou%3DESDC-EDSC%2C+o%3DGC%2C+c%3DCA',
+    'Canadian Race Relations Foundation': 'ou%3DPCH-PCH%2C+o%3DGC%2C+c%3DCA',
+    'Canadian Trade Commissioner Service': 'ou%3DGAC-AMC%2CO%3DGC%2CC%3DCA',
+    'Crown-Indigenous Relations and Northern Affairs Canada': 'ou%3DISC-SAC%2Co%3DGC%2Cc%3DCA',
+    'Environmental Protection Review Canada': 'ou%3DECCC-ECCC%2C+o%3DGC%2C+c%3DCA',
+    'Export Development Canada': 'ou%3DGAC-AMC%2CO%3DGC%2CC%3DCA',
+    'Freshwater Fish Marketing Corporation': 'ou%3DDFO-MPO%2C+o%3DGC%2C+c%3DCA',
+    'Great Lakes Pilotage Authority Canada': 'O%3DGC%2CC%3DCA',
+    'Historic Sites and Monuments Board of Canada': 'OU%3DPC-PC%2CO%3DGC%2CC%3DCA',
+    'Industrial Technologies Office': 'ou%3DISED-ISDE%2C+o%3DGC%2C+c%3DCA',
+    'Judicial Compensation and Benefits Commission': 'ou%3DJUS-JUS%2C+o%3DGC%2C+c%3DCA',
+    'Labour Program': 'ou%3DESDC-EDSC%2C+o%3DGC%2C+c%3DCA',
+    'Marine Atlantic': 'ou%3DTC-TC%2C+o%3DGC%2C+c%3DCA',
+    'Parliament of Canada': 'C%3DCA',
+    'Public Sector Pension Investment Board': 'ou%3DTBS-SCT%2C+o%3DGC%2C+c%3DCA',
+    'Ridley Terminals Inc.': 'ou%3DTC-TC%2C+o%3DGC%2C+c%3DCA',
+    'Royal Military College of Canada': 'OU%3Ddnd-mdn%2CO%3Dgc%2CC%3Dca',
+    'Service Canada': 'ou%3DESDC-EDSC%2C+o%3DGC%2C+c%3DCA',
+    'VIA Rail Canada': 'ou%3DTC-TC%2C+o%3DGC%2C+c%3DCA',
+    'Windsor-Detroit Bridge Authority': 'ou%3DINFC-INFC%2C+o%3DGC%2C+c%3DCA',
+}
+
 
 def load_geds_orgs(file_name):
     geds_org_dict, geds_en_abr_dict = dict(), dict()
@@ -116,19 +115,41 @@ def load_goc_deps(file_name):
 
 def get_words(name):
     n = name.lower()
-    n = n.replace(', office of the', '')
-    n = n.replace('(office of the)', '').replace('office', '')
-    n = n.replace('of canada', '').replace('canadian', '')
-    n = n.replace("'s", ' ').replace("'", ' ').replace("-", ' ')
-    r = {
-        w.strip()
-        for w in n.split()
-        if w.lower() not in ['of', 'the', 'and']
-    }
-    return r
+    for x in REGEX_REPLACE:
+        n = x['regex'].sub(x['sub'], n)
+    return { w.strip() for w in n.split() if w.lower() not in IGNORED_WORDS }
 
 
 def match_by_words(dept_dict, dn, org):
+    o_name = org['org_en_name']
+    if 'word_set' not in org:
+        org['word_set'] = get_words(o_name)
+        org['word_cnt'] = len(org['word_set'])
+
+    o_name_set, o_cnt = org['word_set'], org['word_cnt']
+    for dept_name, dept in dept_dict.items():
+        if 'word_set' not in dept:
+            dept['word_set'] = get_words(dept['en_name'])
+            dept['word_cnt'] = len(dept['word_set'])
+
+        d_name_set, d_cnt = dept['word_set'], dept['word_cnt']
+        common_set = o_name_set.intersection(d_name_set)
+        if not common_set:
+            continue
+        union = o_name_set.union(d_name_set).difference(common_set)
+        if union.intersection(DIFFERENTIATORS):
+            continue
+
+        c_cnt = len(common_set)
+        if 2.0 * c_cnt > COMMON_INDEX * (d_cnt + o_cnt):
+            if all([c == ' ' or c.isupper() for c in o_name]):
+                org['org_en_name'] = dept_name
+            if dept['en_abbr']:
+                org['en_abbr'] = dept['en_abbr']
+                org['fr_abbr'] = dept['fr_abbr']
+            return True, dept_name
+
+    return False, None
 
 
 def match_by_name(dept_dict, dn, org):
@@ -162,6 +183,33 @@ def match_by_name(dept_dict, dn, org):
     if o_name.endswith(', Office of the'):
         dept_name = o_name[0:len(o_name)-len(', Office of the'):].strip() + ' (Office of the)'
         if dept_name in dept_dict:
+            return True, dept_name
+
+    if o_name.endswith('Research Council of Canada'):
+        dept_name = o_name[0:len(o_name)-len('Research Council of Canada'):].strip() + ' Research Canada'
+        if dept_name in dept_dict:
+            return True, dept_name
+
+    if o_name.startswith('Office of the Commissioner, '):
+        dept_name = o_name[len('Office of the Commissioner, '):].strip()
+        if dept_name in dept_dict:
+            return True, dept_name
+
+    if o_name.startswith('Federal Public Sector'):
+        dept_name = 'Public Service ' + o_name[len('Federal Public Sector'):].strip()
+        if dept_name in dept_dict:
+            return True, dept_name
+
+    if o_name == 'Canadian Tourism Commission':
+        dept_name = 'Destination Canada'
+        if dept_name in dept_dict:
+            org['org_en_name'] = dept_name
+            return True, dept_name
+
+    if dn == 'ou%3DOMBUDSMAN-OMBUDSMAN%2COU%3DDND-MDN%2CO%3DGC%2CC%3DCA':
+        dept_name = 'Ombudsman for the Department of National Defence and the Canadian Forces (Office of the)'
+        if dept_name in dept_dict:
+            org['org_en_name'] = dept_name
             return True, dept_name
 
     return False, None
@@ -207,41 +255,8 @@ if __name__ == '__main__':
     goc_dep_dict = load_goc_deps(GOC_DEPT_FILE)
     print('Loaded %d deps by [en] name.' % len(goc_dep_dict))
 
-    print(match_by_name)
     match_depts(goc_dep_dict, geds_org_dict, match_by_name)
     show_remaining_depts(goc_dep_dict, True)
 
-    # dep_name_dict = { k: get_words(k) for k in goc_en_dep_dict.keys() }
-    # common_en_mix_names = dict()
-    # for _, org in geds_org_dict.items():
-    #     o_name = org['org_en_name']
-    #     if o_name in common_en_dept_names or o_name in common_en_org_names:
-    #         continue
-    #
-    #     o_name_set = get_words(o_name)
-    #     o_cnt = len(o_name_set)
-    #     for d_name, d_name_set in dep_name_dict.items():
-    #         common = o_name_set.intersection(d_name_set)
-    #         if not common:
-    #             continue
-    #         union = o_name_set.union(d_name_set).difference(common)
-    #         if union.intersection(DIFFERENTIATORS):
-    #             continue
-    #
-    #         c_cnt = len(common)
-    #         d_cnt = len(d_name_set)
-    #         if 2.0 * c_cnt > 0.85 * (d_cnt + o_cnt):
-    #             if all([c == ' ' or c.isupper() for c in o_name]):
-    #                 org['org_en_name'] = d_name
-    #             if goc_en_dep_dict[d_name]:
-    #                 org['en_abbr'] = goc_en_dep_dict[d_name]
-    #             common_en_mix_names[d_name] = org
-    #             break
-    #
-    # print('common_en_mix_names = %s' % len(common_en_mix_names))
-    # for d_name in sorted(common_en_mix_names.keys()):
-    #     org = common_en_mix_names[d_name]
-    #     print('%s %s -> %s %s' % (d_name, goc_en_dep_dict[d_name], org['org_en_name'], org['en_abbr']))
-    #     goc_en_dep_dict.pop(d_name)
-    # print('remains = %s' % len(goc_en_dep_dict))
-    #
+    match_depts(goc_dep_dict, geds_org_dict, match_by_words)
+    show_remaining_depts(goc_dep_dict, True)
