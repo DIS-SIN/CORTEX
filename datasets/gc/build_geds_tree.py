@@ -4,6 +4,9 @@ import re
 import traceback
 import urllib.parse
 
+GC_ORG_ENT_FILE ='gc_org.tsv'
+GC_ORG_REL_FILE ='gc_org_TO_gc_org.tsv'
+
 GEDS_ORG_FILE='geds_orgs.tsv'
 GEDS_REL_FILE='geds_rels.tsv'
 
@@ -72,10 +75,18 @@ PARENT_MAPPINGS = {
     'VIA Rail Canada': 'ou%3DTC-TC%2C+o%3DGC%2C+c%3DCA',
     'Windsor-Detroit Bridge Authority': 'ou%3DINFC-INFC%2C+o%3DGC%2C+c%3DCA',
 }
+ABBR_MAPPINGS = {
+    'Parliament of Canada': ['PARL', 'PARL'],
+    'Canada Research Chairs': ['CHAIRS', 'CHAIRES'],
+    'Judicial Compensation and Benefits Commission': ['PGJC', 'JCQC'],
+    'Bank of Canada Museum': ['BANKOFCANADAMUSEUM', 'MUSEEDELABANQUEDUCANADA'],
+    'Labour Program': ['LABOUR', 'TRAVAIL'],
+    'Ridley Terminals Inc.': ['RTI', 'RTI'],
+}
 
 
 def load_geds_orgs(file_name):
-    geds_org_dict = dict(), dict()
+    geds_org_dict = dict()
 
     with open(file_name, mode='rt', encoding='utf-8') as tsv_file:
         reader = csv.DictReader(tsv_file, delimiter='\t')
@@ -234,7 +245,7 @@ def match_depts(dept_dict, geds_dict, match_func):
         is_match, dept_name = match_func(dept_dict, dn, org)
         if is_match:
             org['org_fr_name'] = dept_dict[dept_name]['fr_name']
-            extend_entity(org, dept_dict[dept_name], ['en_name', 'fr_name'])
+            extend_entity(org, dept_dict[dept_name], ignore=['en_name', 'fr_name'])
             matches[dept_name] = org
 
     update_depts(matches, dept_dict)
@@ -252,7 +263,6 @@ def show_remaining_depts(dept_dict, details=False):
 if __name__ == '__main__':
     geds_org_dict = load_geds_orgs(GEDS_ORG_FILE)
     print('Loaded %d orgs by org_dn.' % len(geds_org_dict))
-    print('Loaded %d deps by [en] abbr.' % len(geds_en_abr_dict))
 
     goc_dep_dict = load_goc_deps(GOC_DEPT_FILE)
     print('Loaded %d deps by [en] name.' % len(goc_dep_dict))
@@ -263,29 +273,34 @@ if __name__ == '__main__':
     match_depts(goc_dep_dict, geds_org_dict, match_by_words)
     show_remaining_depts(goc_dep_dict, True)
 
-    ent_file = open(GEDS_ORG_FILE.replace('.tsv', '-2.tsv'), mode='wt', encoding='utf-8')
-    ent_file.write('\t'.join(headers) + '\n')
-    for dn, org in geds_dict.items():
-        row = '\t'.join([item['entity'][k] for k in GEDS_ORG_HRS + GEDS_EXT_HRS]) + '\n'
+    ent_file = open(GC_ORG_ENT_FILE, mode='wt', encoding='utf-8')
+    ent_file.write('\t'.join([GEDS_ORG_UID] + GEDS_ORG_HRS + GEDS_EXT_HRS) + '\n')
+    for dn, org in geds_org_dict.items():
+        row = '\t'.join([dn] + ["%s" % org[k] if k in org else "" for k in GEDS_ORG_HRS + GEDS_EXT_HRS]) + '\n'
         ent_file.write(row)
 
-    rel_file = open(GEDS_REL_FILE, mode='at', encoding='utf-8')
+    rel_file = open(GC_ORG_REL_FILE, mode='wt', encoding='utf-8')
+    with open(GEDS_REL_FILE, mode='rt', encoding='utf-8') as text_file:
+        for line in text_file.readlines():
+            rel_file.write(line)
+
     for dept_name, dept in goc_dep_dict.items():
         org = dict()
         o_name = dept['en_name']
         org['org_en_name'] = o_name
         org['org_fr_name'] = dept['fr_name']
-        extend_entity(org, dept, ['en_name', 'fr_name'])
-        org['org_lc_addr'] = ''
-        org['org_lc_city'] = ''
-        org['org_lc_pc'] = ''
-        org['org_lc_ctry'] = ''
+        extend_entity(org, dept, ignore=['en_name', 'fr_name'])
         org['is_dept'] = False
         if o_name in ['Parliament of Canada', 'Great Lakes Pilotage Authority Canada']:
             org['is_dept'] = True
-        org['org_dn'] = urllib.parse.quote('ou=%s-%s, ' % (org['en_abbr'], org['fr_abbr'])) + PARENT_MAPPINGS[o_name]
+        if 'en_abbr' not in org or not org['en_abbr']:
+            org['en_abbr'], org['fr_abbr'] = ABBR_MAPPINGS[org['org_en_name']]
 
-        row = '\t'.join([item['entity'][k] for k in GEDS_ORG_HRS + GEDS_EXT_HRS]) + '\n'
+        parent_org_dn = urllib.parse.unquote(PARENT_MAPPINGS[o_name])
+        child_org_dn = 'ou=%s-%s,%s' % (org['en_abbr'], org['fr_abbr'], parent_org_dn)
+        org['org_dn'] = urllib.parse.quote(child_org_dn)
+
+        row = '\t'.join([org['org_dn']] + ["%s" % org[k] if k in org else "" for k in GEDS_ORG_HRS + GEDS_EXT_HRS]) + '\n'
         ent_file.write(row)
 
         row = '\t'.join([PARENT_MAPPINGS[o_name], org['org_dn']]) + '\n'
