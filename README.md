@@ -14,3 +14,10 @@
 ![Logical diagram](doc_images/Component.png)
 
 ![Physical diagram](doc_images/Deployment.png)
+
+# C. Notes
+
+mjolnir - tool for large data import: completed harvesting, normalization, and configuration for basic reference datasets to be imported into Jotunheimr via Yggdrasil:
++ Postal Code v2015 (Municipality, Community, Postal Code, Geo-Location, Province)
++ GoC Departments and Organizations from GEDS v2019 (en/fr names, abbreviations, sub-organization structure, locations)
++ GoC Occupation Classifications v2019 (occupation groups/sub-groups, classifications, levels)
