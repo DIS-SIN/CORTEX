@@ -11,7 +11,8 @@ import urllib
 URL_PREFIX = 'https://www.canada.ca'
 EN_URI = '/en/government/dept.html'
 FR_URI = '/fr/gouvernement/min.html'
-
+GOC_DEPT_BILINGUAL='src/goc_dept_bilingual.tsv'
+GOC_DEPTS='src/goc_depts.tsv'
 headers = [
     'en_name', 'en_url', 'en_abbr',
     'fr_name', 'fr_url', 'fr_abbr',
@@ -71,7 +72,7 @@ def write_rows(rows, file_name):
 
 
 if __name__ == '__main__':
-    dept_list = load_rows('goc_dept_bilingual.tsv')
+    dept_list = load_rows(GOC_DEPT_BILINGUAL)
     print('Loaded %d departments.' % len(dept_list))
 
     for uri, lang in [ [EN_URI, 'en'], [FR_URI, 'fr']]:
@@ -80,5 +81,5 @@ if __name__ == '__main__':
         for dept in dept_list:
             dept['%s_url' % lang] = dept_dict[dept['%s_name' % lang]]['url']
 
-    file_name = 'goc_depts.tsv'
+    file_name = GOC_DEPTS
     count = write_rows(dept_list, file_name)

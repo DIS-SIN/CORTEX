@@ -4,13 +4,11 @@ import re
 import traceback
 import urllib.parse
 
-GC_ORG_ENT_FILE ='gc_org.tsv'
-GC_ORG_REL_FILE ='gc_org_TO_gc_org.tsv'
-
-GEDS_ORG_FILE='geds_orgs.tsv'
-GEDS_REL_FILE='geds_rels.tsv'
-
-GOC_DEPT_FILE='goc_depts.tsv'
+GC_ORG_ENT_FILE ='tsv/org.tsv'
+GC_ORG_REL_FILE ='tsv/org_TO_org.tsv'
+GEDS_ORG_FILE='src/geds_orgs.tsv'
+GEDS_REL_FILE='src/geds_rels.tsv'
+GOC_DEPT_FILE='src/goc_depts.tsv'
 
 GEDS_ORG_UID = 'org_dn'
 GEDS_ORG_HRS = [
@@ -274,15 +272,22 @@ if __name__ == '__main__':
     show_remaining_depts(goc_dep_dict, True)
 
     ent_file = open(GC_ORG_ENT_FILE, mode='wt', encoding='utf-8')
-    ent_file.write('\t'.join([GEDS_ORG_UID] + GEDS_ORG_HRS + GEDS_EXT_HRS) + '\n')
+    hdrs = [GEDS_ORG_UID] + GEDS_ORG_HRS + ['org_%s' % h for h in GEDS_EXT_HRS]
+    ent_file.write('\t'.join(hdrs) + '\n')
     for dn, org in geds_org_dict.items():
         row = '\t'.join([dn] + ["%s" % org[k] if k in org else "" for k in GEDS_ORG_HRS + GEDS_EXT_HRS]) + '\n'
         ent_file.write(row)
 
     rel_file = open(GC_ORG_REL_FILE, mode='wt', encoding='utf-8')
+    hdrs = 's_org_dn\te_org_dn\n'
+    line_cnt = 0
     with open(GEDS_REL_FILE, mode='rt', encoding='utf-8') as text_file:
         for line in text_file.readlines():
-            rel_file.write(line)
+            if line_cnt == 0:
+                rel_file.write(hdrs)
+            else:
+                rel_file.write(line)
+            line_cnt += 1
 
     for dept_name, dept in goc_dep_dict.items():
         org = dict()

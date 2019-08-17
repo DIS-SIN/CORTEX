@@ -1,13 +1,13 @@
 #!/bin/bash
 
-if [ $# -lt 3 ]; then
-  echo "Usage: ./wield_mjolnir.sh <option> <config_file> <source_directory> <target_directory> <extra_directory>"
+if [ $# -lt 4 ]; then
+  echo "Usage: ./wield_mjolnir.sh <option> <config_file> <source_directory> <target_directory> <extra_directories>"
   echo "Example:"
   echo "  ./wield_mjolnir.sh -metxsci ./tmp/cp.ini ./tmp"
   echo "Option:"
   echo "  -m: create target directory if none"
   echo "  -e: extract entities and relations into tsv files"
-  echo "  -x: copy any *.tsv file from extra directory into target directory"
+  echo "  -x: copy any *.tsv file from tsv sub-irectory of extra directories into target directory"
   echo "  -s: run schema file schema_for_jotunheimr.cql if jotunheimr is a local container"
   echo "  -c: configure sink connector"
   echo "  -i: import data by producing messages to yggdrasil"
@@ -26,7 +26,7 @@ fi
 CFG_FILE=$1
 SOURCE_DIR=$2
 TARGET_DIR=$3
-EXTR_DIR=$4
+EXTR_DIRS=$4
 
 if [[ $commands == *"m"* ]]; then
   if [[ ! -d $TARGET_DIR ]]; then
@@ -41,9 +41,21 @@ if [[ $commands == *"e"* ]]; then
 fi
 
 if [[ $commands == *"x"* ]]; then
-  if [[ -d $EXTR_DIR ]]; then
-    echo "cp $EXTR_DIR/*.tsv $TARGET_DIR/."
-    cp $EXTR_DIR/*.tsv $TARGET_DIR/.
+  if [[ $EXTR_DIRS == *":"* ]]; then
+    E_DIRS=$(echo $EXTR_DIRS | tr ":" "\n")
+    echo $E_DIRS
+    for E_DIR in $E_DIRS
+    do
+      if [[ -d $E_DIR ]]; then
+        echo "cp $E_DIR/tsv/*.tsv $TARGET_DIR/."
+        cp $E_DIR/tsv/*.tsv $TARGET_DIR/.
+      fi
+    done
+  else
+    if [[ -d $EXTR_DIR ]]; then
+      echo "cp $EXTR_DIR/tsv/*.tsv $TARGET_DIR/."
+      cp $EXTR_DIR/tsv/*.tsv $TARGET_DIR/.
+    fi
   fi
 fi
 
