@@ -15,7 +15,7 @@
 
 ![Physical diagram](doc_images/Deployment.png)
 
-# C. Notes
+# D. Notes
 
 ## mjolnir - tool for large data import
 Completed harvesting, normalization, and configuration for basic reference datasets to be imported into Jotunheimr via Yggdrasil:
