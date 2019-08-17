@@ -19,7 +19,7 @@ def produce_messages(input_file, prefixed_topic, producer):
             print('.', end='', flush=True)
             producer.flush()
     producer.flush()
-    print(' %s.' % count)
+    print('. %s' % count)
 
 
 if __name__ == "__main__":

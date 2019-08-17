@@ -23,8 +23,8 @@ headers = [
     'org_lc_addr',
     'org_lc_city', 'org_lc_pr', 'org_lc_pc', 'org_lc_ctry'
 ]
-ENT_FILE_NAME = 'geds_orgs.tsv'
-REL_FILE_NAME = 'geds_rels.tsv'
+ENT_FILE_NAME = 'src/geds_orgs.tsv'
+REL_FILE_NAME = 'src/geds_rels.tsv'
 
 
 def requests_retry_session(
