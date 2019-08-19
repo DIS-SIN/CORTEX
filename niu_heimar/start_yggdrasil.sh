@@ -23,9 +23,17 @@ case "${unameOut}" in
   Darwin*)
     export LOCAL_IP=`ipconfig getifaddr en0`
     ;;
+  MINGW*)
+    if [ $# -lt 1 ]; then
+      echo "Usage: ./start_yggdrasil.sh <local_ip>"
+      echo "Example: ./start_yggdrasil.sh 10.0.1.119"
+      exit
+    fi
+    export LOCAL_IP=$1
+    ;;
 esac
 
-
+echo $LOCAL_IP
 
 docker-compose -f yggdrasil.yml up -d --build
 

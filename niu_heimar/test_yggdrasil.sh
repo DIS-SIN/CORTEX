@@ -19,6 +19,6 @@ kafkacat -b $1:9092 -t test_topic_json -C -e
   ;;
 
   *)
-    python3 test_yggdrasil.py $1:9092 http://$1:8081 test_topic_avro
+    python test_yggdrasil.py $1:9092 http://$1:8081 test_topic_avro
     ;;
 esac
