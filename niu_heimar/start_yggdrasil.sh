@@ -15,8 +15,17 @@ if [[ ! -d "$PLUGINS/neo4j-kafka-connect-neo4j-1.0.3" ]]; then
   rm neo4j-kafka-connect-neo4j-1.0.3.zip
 fi
 
-LOCAL_IP=`hostname -I | cut -f 1 -d ' '`
-echo $LOCAL_IP
+unameOut="$(uname -s)"
+case "${unameOut}" in
+  Linux*)
+    export LOCAL_IP=`hostname -I | cut -f 1 -d ' '`
+    ;;
+  Darwin*)
+    export LOCAL_IP=`ipconfig getifaddr en0`
+    ;;
+esac
+
+
 
 docker-compose -f yggdrasil.yml up -d --build
 
