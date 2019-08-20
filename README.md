@@ -15,7 +15,17 @@
 
 ![Physical diagram](doc_images/Deployment.png)
 
-# D. Notes
+## D. MVP data models
+
+- blue nodes & relationships created by EValhalla Designer - the `survey`
+- red nodes & relationships created by EValhalla Player - the `response`
+- `Respondent` entity is created by EValhalla Player if it does not exists
+- meta data inside `question` with `classified`-type `answer` will help to decide to `enrich` the `Respondent` with known entities or let them belong to the `response` as usual.
+- other data entity types are not added
+
+![Data model diagram](doc_images/data_models.png)
+
+## E. Notes
 
 ## mjolnir - tool for large data import
 Completed harvesting, normalization, and configuration for basic reference datasets to be imported into Jotunheimr via Yggdrasil:
