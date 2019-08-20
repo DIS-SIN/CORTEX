@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: test_runner-0.1:bdd
+    volumes:
+      - $PWD/behave:/behave
