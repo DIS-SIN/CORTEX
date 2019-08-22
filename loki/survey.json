@@ -1,0 +1,64 @@
+{
+  "survey": {
+    "uid": "s1",
+    "title": "Trash collecting system",
+    "description": "Budget upgrade",
+    "designer": "Odin the boss",
+    "created": 1566418260,
+    "valid": [1566418260, 1567295999],
+    "version": "0.0.1"
+  },
+  "questions": [
+      {
+        "qid": "Q1",
+        "content": "Which department are you from?",
+        "at_order": "1",
+        "type": "CLASSIFIED",
+        "classified_as": "GC_Org"
+      },
+      {
+        "qid": "Q2",
+        "content": "What language do you speak?",
+        "at_order": "2",
+        "type": "SINGLE_CHOICE",
+        "options": [
+          "English", "French"
+        ]
+      },
+      {
+        "qid": "Q3",
+        "content": "Where do you live and work?",
+        "at_order": "3",
+        "type": "MULTI_CHOICE",
+        "classified_as": "CP_CSD"
+      },
+      {
+        "qid": "Q4",
+        "content": "What is your classification?",
+        "at_order": "4",
+        "type": "SINGLE_CHOICE",
+        "classified_as": "GC_ClsLvl"
+      },
+      {
+        "qid": "Q5",
+        "content": "Do you drive to work?",
+        "at_order": "5",
+        "type": "BINARY"
+      },
+      {
+        "qid": "Q6",
+        "content": "Describe a normal workday",
+        "at_order": "6",
+        "type": "FREE_TEXT"
+      },
+      {
+        "qid": "Q7",
+        "content": "Which day do you prefer to empty trash?",
+        "at_order": "7",
+        "type": "SINGLE_CHOICE",
+        "options": [
+          "Friday", "Saturday", "Sunday"
+        ]
+    }
+  ]
+}

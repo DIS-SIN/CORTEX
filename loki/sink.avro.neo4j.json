@@ -1,0 +1,17 @@
+{
+  "name": "Neo4jSinkConnector",
+  "config": {
+    "topics": "survey_json",
+    "connector.class": "streams.kafka.connect.sink.Neo4jSinkConnector",
+    "errors.retry.timeout": "-1",
+    "errors.retry.delay.max.ms": "1000",
+    "errors.tolerance": "all",
+    "errors.log.enable": true,
+    "errors.log.include.messages": true,
+    "neo4j.server.uri": "bolt://jotunheimr:7687",
+    "neo4j.authentication.basic.username": "neo4j",
+    "neo4j.authentication.basic.password": "##dis@da2019##",
+    "neo4j.encryption.enabled": false,
+    "neo4j.topic.cypher.survey_json": "MERGE (n:Valhalla_Survey {uid: event.uid, format: event.format, content: event.content}) WITH n, apoc.convert.getJsonProperty(n, 'content') AS c WITH n, c UNWIND c.questions AS cq WITH n, cq MERGE (q:Valhalla_Question {qid: n.uid + '-' + cq.qid}) SET q.type = cq.type, q.content = cq.content, q.classified_as = cq.classified_as, q.options = cq.options WITH n, cq, q MERGE (q)<-[:AT_ORDER {n: cq.at_order}]-(n)"
+  }
+}
