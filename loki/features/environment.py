@@ -68,6 +68,12 @@ def before_all(context):
     context.broker_url = context.config.userdata.get("yggdrasil_broker")
     context.schema_registry_url = "http://%s/" % context.config.userdata.get("yggdrasil_schema_registry")
 
+    context.neo4j_conf = {
+        'neo4j_bolt_server': 'bolt://%s' % context.config.userdata.get("jotunheimr"),
+        'neo4j_user': 'neo4j',
+        'neo4j_password': '##dis@da2019##',
+    }
+
     # context.player_producer = AvroProducer(
     #     {
     #         'bootstrap.servers': context.broker_url,
@@ -91,12 +97,6 @@ def before_all(context):
     # )
     #
     # context.visualiser_consumer.subscribe([context.topics["survey_metrics", "nlp_result"]])
-    # neo4j_conf = {
-    #     'neo4j_bolt_server': 'bolt://%s' % context.config.userdata.get["jotunheimr"],
-    #     'neo4j_user': 'neo4j',
-    #     'neo4j_password': '##dis@da2019##',
-    # }
-    # context.visualiser_neo4j_adapter = Neo4jAdapter(neo4j_conf)
 
 
 def after_all(context):

@@ -12,6 +12,7 @@
     "neo4j.authentication.basic.username": "neo4j",
     "neo4j.authentication.basic.password": "##dis@da2019##",
     "neo4j.encryption.enabled": false,
-    "neo4j.topic.cypher.survey_json": "MERGE (n:Valhalla_Survey {uid: event.uid, format: event.format, content: event.content}) WITH n, apoc.convert.getJsonProperty(n, 'content') AS c WITH n, c UNWIND c.questions AS cq WITH n, cq MERGE (q:Valhalla_Question {qid: n.uid + '-' + cq.qid}) SET q.type = cq.type, q.content = cq.content, q.classified_as = cq.classified_as, q.options = cq.options WITH n, cq, q MERGE (q)<-[:AT_ORDER {n: cq.at_order}]-(n)"
+    "neo4j.topic.cypher.survey_json": "
+    MERGE (s:Valhalla_Survey {uid: event.uid, format: event.format, content: event.content}) SET s.title = [c['title']['en'], c['title']['fr']], s.description = [c['description']['en'], c['description']['fr']], s.valid = [c['valid']['from'], c['valid']['to']], s.version = c.version WITH s, apoc.convert.getJsonProperty(s, 'content') AS content WITH s, content['questions'] AS questions UNWIND questions AS cq WITH s, cq FOREACH (dummy IN CASE WHEN cq['qid'] <> 'none' THEN [1] ELSE [] END | MERGE (q:Valhalla_Question {uid: cq['cortex']['uid']}) SET q.type = cq['cortex']['questionType'], q.question = [cq['question']['en'], cq['question']['fr']], q.classified_as = cq['cortex']['classifiedAs'], q.options = apoc.convert.toJson(cq['cortex']['options']) MERGE (q)<-[:AT_ORDER {n: cq['cortex']['atOrder']}]-(s))"
   }
 }

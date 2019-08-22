@@ -21,10 +21,15 @@ SURVEY_VALUE_SCHEMA = {
 }
 
 
-def produce_message_via_proxy(context, topic, uid, format, content):
+def produce_message_via_proxy(context, topic, format, content):
     producer_topic_url = '%s/%s' % (context.rest_proxy_topic_url, context.topics[topic])
     topic_url = '%s/%s' % (context.rest_proxy_topic_url, context.topics[topic])
-    payload = {"uid": uid, "format": format, "content": content}
+    survey_json = json.loads(content)
+    payload = {
+        "uid": survey_json['uid'],
+        "format": format,
+        "content": content
+    }
     data = context.rest_proxy_schema % json.dumps(payload)
     r = requests.post(topic_url, headers={
         "Content-Type": "application/vnd.kafka.avro.v2+json",
