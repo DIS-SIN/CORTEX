@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# -lt 1 ]; then
-  echo "Usage: ./start_jotunheimr.sh <neo4j_dir>"
-  echo "Example: ./start_jotunheimr.sh ~/neo4j"
+if [ $# -lt 2 ]; then
+  echo "Usage: ./start_jotunheimr.sh <neo4j_dir> <yggdrasil_host>"
+  echo "Example: ./start_jotunheimr.sh ~/neo4j 10.0.1.23"
   exit
 fi
 
@@ -10,6 +10,8 @@ NEO4J_DIR=$1
 export NEO4J_GDB_DATA=$NEO4J_DIR/data
 export NEO4J_GDB_IMPT=$NEO4J_DIR/import
 export NEO4J_GDB_LOGS=$NEO4J_DIR/logs
+
+export YGGDRASIL_HOST=$2
 
 docker-compose -f jotunheimr.yml up -d --build
 
