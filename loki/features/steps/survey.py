@@ -35,3 +35,58 @@ def step_impl(context, survey_uid, question_uids):
     q_uids = ['%s_%s' % (survey_uid, q_uid.strip()) for q_uid in question_uids.split(',')]
     r_uids = find_questions_of_survey(context, survey_uid)
     assert sorted(r_uids) == sorted(q_uids)
+
+
+@given('Thor creates a "{response}" to "{name}" survey')
+def step_impl(context, response, name):
+    pass
+
+
+@when('he sent this response via "{topic}" to Jotunheimr')
+def step_impl(context, topic):
+    pass
+
+
+@then('Jotunheimr extracts "{number}" answers')
+def step_impl(context, number):
+    pass
+
+
+@then('updates aggreagated metricsto contains response "{type}" from "{datetime}"')
+def step_impl(context, type, datetime):
+    pass
+
+
+@then('and send free text answers via "{topic}" to Asgard')
+def step_impl(context, topic):
+    pass
+
+
+@given('Asgard receives a free text answer "{text}" via "{topic}"')
+def step_impl(context, text, topic):
+    pass
+
+
+@when('it sends "{value}" as its sentiment value via "{topic}" to Jotuheimr')
+def step_impl(context, name):
+    pass
+
+
+@then('Jotunheimr persists this sentiment "{value}" value for "{question_uid}"')
+def step_impl(context, name):
+    pass
+
+
+@given('the Visualizer queries responses for "{survey}"')
+def step_impl(context, name):
+    pass
+
+
+@when('metrics arrive via "{topic}"')
+def step_impl(context, name):
+    pass
+
+
+@then('sentiment value {value} also come via "{topic}"')
+def step_impl(context, value name):
+    pass
