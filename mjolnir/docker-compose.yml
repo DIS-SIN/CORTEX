@@ -78,6 +78,7 @@ services:
     environment:
       - SCHEMA_REGISTRY_HOST_NAME=yggdrasil_schema_registry
       - SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL=yggdrasil_zookeeper:2181
+      - SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_ORIGIN="*"
 
   ####################
   # connect
@@ -172,6 +173,7 @@ services:
   #     - KAFKA_REST_ZOOKEEPER_CONNECT=yggdrasil_zookeeper:2181
   #     - KAFKA_REST_LISTENERS=http://0.0.0.0:8082
   #     - KAFKA_REST_SCHEMA_REGISTRY_URL=http://yggdrasil_schema_registry:8081
+  
 
   ##############################################################################
   #
