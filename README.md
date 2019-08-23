@@ -25,7 +25,11 @@
 
 ![Data model diagram](doc_images/data_models.png)
 
-## E. Notes
+## E. BDD test scenarios
+
+![BDD tests scenarios](doc_images/CORTEX-S1-BDD.png)
+
+## F. Notes
 
 ## mjolnir - tool for large data import
 Completed harvesting, normalization, and configuration for basic reference datasets to be imported into Jotunheimr via Yggdrasil:

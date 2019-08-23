@@ -1,5 +1,18 @@
 #!/bin/bash
 
+if [ $# -lt 2 ]; then
+  echo "Usage: ./start_yggdrasil.sh <local_ip> <neo4j_dir>"
+  echo "Example: ./start_yggdrasil.sh 10.0.1.119 ~/neo4j"
+  exit
+fi
+
+export YGGDRASIL_HOST=$1
+
+NEO4J_DIR=$2
+export NEO4J_GDB_DATA=$NEO4J_DIR/data
+export NEO4J_GDB_IMPT=$NEO4J_DIR/import
+export NEO4J_GDB_LOGS=$NEO4J_DIR/logs
+
 PLUGINS=~/yggdrasil/connect/plugins/
 
 if [[ ! -d "$PLUGINS" ]]; then
@@ -15,25 +28,6 @@ if [[ ! -d "$PLUGINS/neo4j-kafka-connect-neo4j-1.0.3" ]]; then
   rm neo4j-kafka-connect-neo4j-1.0.3.zip
 fi
 
-unameOut="$(uname -s)"
-case "${unameOut}" in
-  Linux*)
-    export LOCAL_IP=`hostname -I | cut -f 1 -d ' '`
-    ;;
-  Darwin*)
-    export LOCAL_IP=`ipconfig getifaddr en0`
-    ;;
-  MINGW*)
-    if [ $# -lt 1 ]; then
-      echo "Usage: ./start_yggdrasil.sh <local_ip>"
-      echo "Example: ./start_yggdrasil.sh 10.0.1.119"
-      exit
-    fi
-    export LOCAL_IP=$1
-    ;;
-esac
-
-echo $LOCAL_IP
 
 docker-compose -f yggdrasil.yml up -d --build
 

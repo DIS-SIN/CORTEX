@@ -1,0 +1,13 @@
+CREATE CONSTRAINT ON (n:Valhalla_Survey) ASSERT n.uid IS UNIQUE;
+CREATE CONSTRAINT ON (n:Valhalla_Question) ASSERT n.uid IS UNIQUE;
+CREATE CONSTRAINT ON (n:Valhalla_Response) ASSERT n.uid IS UNIQUE;
+CREATE CONSTRAINT ON (n:Valhalla_Respondent) ASSERT n.uid IS UNIQUE;
+CREATE CONSTRAINT ON (n:Valhalla_Answer) ASSERT n.text IS UNIQUE;
+CREATE INDEX ON :Valhalla_Survey(title);
+CREATE INDEX ON :Valhalla_Question(question);
+CREATE CONSTRAINT ON (n:GC_Language) ASSERT n.uid IS UNIQUE;
+CREATE INDEX ON :GC_Language(name);
+CREATE CONSTRAINT ON (n:FreeText) ASSERT n.uid IS UNIQUE;
+CALL db.constraints();
+CALL db.indexes();
+CALL db.awaitIndexes();
