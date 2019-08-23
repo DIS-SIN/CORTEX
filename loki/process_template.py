@@ -9,6 +9,8 @@ def get_options(file_name):
     option_name, option_text = None, ''
     with open(file_name, mode='rt', encoding='utf-8') as text_file:
         for line in text_file.readlines():
+            if line.strip().startswith("//"):
+                continue
             if line.startswith('>>>'):
                 option_name = line.strip('\n')[3:]
                 continue
