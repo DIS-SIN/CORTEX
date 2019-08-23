@@ -154,25 +154,26 @@ services:
   # ####################
   # # rest-proxy
   # #
-  # yggdrasil_rest_proxy:
-  #   image: confluentinc/cp-kafka-rest
-  #   hostname: yggdrasil_rest_proxy
-  #   container_name: yggdrasil_rest_proxy
-  #   networks:
-  #     - urd
-  #     - mimir
-  #   depends_on:
-  #     - yggdrasil_zookeeper
-  #     - yggdrasil_broker
-  #     - yggdrasil_schema_registry
-  #     - yggdrasil_connect
-  #   ports:
-  #     - "8082:8082"
-  #   environment:
-  #     - KAFKA_REST_HOST_NAME=yggdrasil_rest_proxy
-  #     - KAFKA_REST_ZOOKEEPER_CONNECT=yggdrasil_zookeeper:2181
-  #     - KAFKA_REST_LISTENERS=http://0.0.0.0:8082
-  #     - KAFKA_REST_SCHEMA_REGISTRY_URL=http://yggdrasil_schema_registry:8081
+   yggdrasil_rest_proxy:
+     image: confluentinc/cp-kafka-rest
+     hostname: yggdrasil_rest_proxy
+     container_name: yggdrasil_rest_proxy
+     networks:
+       - urd
+       - mimir
+     depends_on:
+       - yggdrasil_zookeeper
+       - yggdrasil_broker
+       - yggdrasil_schema_registry
+       - yggdrasil_connect
+     ports:
+       - "8082:8082"
+     environment:
+       - KAFKA_REST_HOST_NAME=yggdrasil_rest_proxy
+       - KAFKA_REST_ZOOKEEPER_CONNECT=yggdrasil_zookeeper:2181
+       - KAFKA_REST_LISTENERS=http://0.0.0.0:8082
+       - KAFKA_REST_SCHEMA_REGISTRY_URL=http://yggdrasil_schema_registry:8081
+       - KAFKA_REST_ACCESS_CONTROL_ALLOW_ORIGIN="*"
   
 
   ##############################################################################
