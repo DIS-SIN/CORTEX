@@ -12,6 +12,8 @@ import gql from "graphql-tag";
 import { faReply, faGraduationCap, faTable, faRegistered} from '@fortawesome/free-solid-svg-icons';
 import { TextField } from '@material-ui/core';
 import DashBreadcrumbs from './DashBreadcrumbs';
+import Section1 from './Overview/Section 1/Section';
+import DepartmentalView from './Overview/DepartmentalView';
 
 export default class DashBoard extends React.Component{
 
@@ -78,27 +80,43 @@ export default class DashBoard extends React.Component{
                 $from: String
                 $to: String
             ){
-                all_offs_data(from:$from, to:$to, first:$first){
-                    start_date,
-                    end_date,
-                    uid,
-                    week,
-                    month,
-                    status,
-                    registered_for{
-                    date,
-                    uid,
-                    no_show,
-                    status
-                    },
-                    surveyed_for{
-                    date,
-                    uid,
-                    classification,
-                    department
-                    }
+              all_offs_data(from:$from, to:$to, first:$first){
+                start_date,
+                end_date,
+                uid,
+                week,
+                month,
+                status,
+                registered_for{
+                date,
+                uid,
+                no_show,
+                status,
+                learners{
+                  classifications{
+                    code
+                  },
+                  departments{
+                    code,
+                    name
+                  }
+                }
+                },
+                surveyed_for{
+                date,
+                uid,
+                classification,
+                department
+                },
+                instructors{
+                  name
+                },
+                courses{
+                  code,
+                  title
                 }
             }
+        }
         `}
         variables={{
             from: this.state.from,
@@ -106,123 +124,79 @@ export default class DashBoard extends React.Component{
             first: this.state.first
         }}
         >
-        {({ loading, error, data }) => {
+          {({ loading, error, data }) => {
             if (loading) return <p class="d-flex justify-content-center mt-5">Loading...</p>;
             if (error) return <p class="d-flex justify-content-center mt-5">Error</p>;
 
             var total_offerings = data.all_offs_data ? data.all_offs_data.length : 0;
-            var total_responses = 0;
             var total_registrations = 0;
+            var total_responses = 0;
 
-            var total_responses_rate_per_day = 0;
-
-            var responseData = [];
-            var dailyData = [];
+            
             var classificationData = [];
             var departmentalData = [];
+            var instructorData = [];
 
-            var responses_per_day = [];
-            var responses_per_course = [];
-            var responses_per_classification = [];
-            var responses_per_department = [];
+            var registrations_per_course = [];
 
             for(let offering of data.all_offs_data){
-                let course = responses_per_course.find(c => c.code === offering.course_code);
+                let course = registrations_per_course.find(c => c.code === offering.courses.code);
                 
                 if(!course){
                     let course_responses = offering.surveyed_for.length;
                     let course_registrations = offering.registered_for.length;
-                    responses_per_course.push({code: offering.course_code, name: offering.course_name, responses: course_responses, registrations: course_registrations, median: (course_responses + course_registrations) / 2});
+                    registrations_per_course.push({code: offering.courses.code, name: offering.courses.title, responses: course_responses, registrations: course_registrations, median: (course_responses + course_registrations) / 2});
                 }else{
-                    responses_per_course[responses_per_course.indexOf(course)].responses += offering.surveyed_for.length;;
-                    responses_per_course[responses_per_course.indexOf(course)].registrations += offering.registered_for.length;
+                  registrations_per_course[registrations_per_course.indexOf(course)].responses += offering.surveyed_for.length;
+                  registrations_per_course[registrations_per_course.indexOf(course)].registrations += offering.registered_for.length;
                 }
                 
                 total_responses += offering.surveyed_for.length;
                 total_registrations += offering.registered_for.length;
 
-                let offering_registrations = offering.registered_for.length;
-                let daily_responses = 0;
-            
-                let classification_responses = 0;
-                let department_responses = 0;
+                for(let inst of offering.instructors){
+                  let instructor = instructorData.find(i => i.name === inst.name);
+
+                  if(!instructor){
+                    instructorData.push({name: inst.name, registrations: offering.registered_for.length, offerings: 1, courses: 1});
+                  }else{
+                    let index = instructorData.indexOf(instructor);
+                    instructorData[index].registrations += offering.registered_for.length;
+                    instructorData[index].offerings += offering.registered_for.length;
+                    instructorData[index].registrations += offering.registered_for.length;
+                  }
+                }
             
 
-                for(let response of offering.surveyed_for){
-                    let day = responses_per_day.find(r => r.day === response.date);
-                    let classification = responses_per_classification.find(c => c.classification === response.classification);
-                    let department = responses_per_department.find(d => d.department === response.department);
+                for(let reg of offering.registered_for){
+                    let classification = classificationData.find(c => c.name === reg.learners[0].classifications[0].code);
+                    let department = departmentalData.find(d => d.code === reg.learners[0].departments[0].code);                    
                     
-
-                    if(!day){
-                    daily_responses = 1;
-                    responses_per_day.push({day: response.date, offerings: [offering.uid], responses: daily_responses, registrations: offering_registrations});
-                    }else{
-                    responses_per_day[responses_per_day.indexOf(day)].responses++;
-                        if(!responses_per_day[responses_per_day.indexOf(day)].offerings.includes(offering.uid)){
-                        responses_per_day[responses_per_day.indexOf(day)].offerings.push(offering.uid);
-                        responses_per_day[responses_per_day.indexOf(day)].registrations += offering_registrations;
-                        }
-                    }
-                    
-                    
-                    if(!classification){
-                    responses_per_classification.push({classification: response.classification, offerings: [offering.uid], count: 1, registrations: offering_registrations});
-                    }else{
-                    let index = responses_per_classification.indexOf(classification);
-                    responses_per_classification[index].count++;
-                      if(!responses_per_classification[index].offerings.includes(offering.uid)){
-                          responses_per_classification[index].offerings.push(offering.uid);
-                          responses_per_classification[index].registrations += offering_registrations;
-                      }
-                    }
+                  if(!classification){
+                    classificationData.push({name: reg.learners[0].classifications[0].code, registrations: 1});
+                  }else{
+                    let index = classificationData.indexOf(classification);
+                    classificationData[index].registrations++;
+                  }
 
                     if(!department){
-                        department_responses = 1;
-                        responses_per_department.push({department: response.department, offerings: [offering.uid], responses: department_responses, registrations: offering_registrations});
+                        departmentalData.push({code: reg.learners[0].departments[0].code, registrations: 1, name: reg.learners[0].departments[0].name});
                     }else{
-                        let index = responses_per_department.indexOf(department);
-                        responses_per_department[index].responses++;
-                        if(!responses_per_department[index].offerings.includes(offering.uid)){
-                            responses_per_department[index].offerings.push(offering.uid);
-                            responses_per_department[index].registrations += offering_registrations;
-                        }
+                        let index = departmentalData.indexOf(department);
+                        departmentalData[index].registrations++;
                     }
                 }
             }
 
-
-            for(let daily_avg of responses_per_day){
-                total_responses_rate_per_day += (daily_avg.responses / daily_avg.registrations);
-                dailyData.push({
-                    name: daily_avg.day, rate: ((daily_avg.responses / daily_avg.registrations) * 100).toFixed(2), registrations: daily_avg.registrations});
-            }
-
-
-            for(let class_avg of responses_per_classification){
-            classificationData.push({
-                name: class_avg.classification, responses: class_avg.responses , registrations: class_avg.registrations});
-            }
-
-            for(let dept_avg of responses_per_department){
-            departmentalData.push({
-                name: dept_avg.department, responses: dept_avg.responses , registrations: dept_avg.registrations});
-            }
-
-
-            responseData.push({name: 'Daily', uv: ((total_responses_rate_per_day / responses_per_day.length) * 100).toFixed(2), fill: '#8884d8'});
-            responseData.push({name: 'Overall', uv: ((total_responses / total_registrations) * 100).toFixed(2), fill: '#ffc658'});
-
-            let tagsData = [{label: "Courses", size: responses_per_course.length, icon: faGraduationCap, color: 'primary'}, {label: "Offerings", size: total_offerings, icon: faTable, color: 'success'}, {label: "Registrations", size: total_registrations, icon: faRegistered, color: 'danger'}, {label: "Responses", size: total_responses, icon: faReply, color: 'warning'}];
+            console.log(classificationData, departmentalData);
           
           
           return (
             <div id="wrapper">
-              <HTMLComment text=" Menu" />
+              <HTMLComment text="Menu" />
               <DashMenu />
 
-              <div id="content-wrapper">
-                <div class="container">
+              <div id="content-wrapper" class="ml-3">
                   <div class="row">
                     <DashBreadcrumbs className="col-lg-6"/>
                     <p class="col-lg-6">
@@ -264,55 +238,21 @@ export default class DashBoard extends React.Component{
                       />
                     </p>
                   </div>
-                  <TagList tagsData={tagsData}/>
                   
-                  <div class="card">
-                    <div class="card-header bg-dark text-white">
-                      <i class="fas fa-chart-area"></i>
-                      Avg response rate<span class="float-right">Daily response rate</span></div>
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col-sm-3">
-                          <Response data={responseData}/>
-                        </div>
-                        <div class="col-sm-9 text-right">
-                          <Daily data={dailyData.slice(0,5)}/>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="card-footer small text-muted">Updated yesterday at 11:59 PM</div>
-                  </div>
+                  <Section1 classificationData={classificationData} />
 
-                  <div class="card mt-5">
-                    <div class="card-header bg-dark text-white">
-                      <i class="fas fa-chart-area"></i>
-                      Registrations / Responses per course<span class="float-right">Classifications response rate</span></div>
+                  <div class="card col-lg-12">
+                    <div class="card-header bg-light">
+                        <i class="fas fa-chart-area"></i>
+                        Departmental data</div>
                     <div class="card-body">
-                      <div class="row">
-                        <div class="col-sm-8">
-                        <Registration data={responses_per_course.slice(0,15)}/>
-                        </div>
-                        <div class="col-sm-4 text-right">
-                          <ClassificationView data={classificationData}/>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="card-footer small text-muted">Updated yesterday at 11:59 PM</div>
-                  </div>
-
-                  <div class="card mt-5">
-                    <div class="card-header bg-dark text-white">
-                      <i class="fas fa-chart-area"></i>
-                      Registrations / Responses per department</div>
-                    <div class="card-body">
-                      <Department data={departmentalData.slice(0,15)}/>
+                      <DepartmentalView data={departmentalData}/>
                     </div>
                     <div class="card-footer small text-muted">Updated yesterday at 11:59 PM</div>
                   </div>
 
                 </div>
               </div>
-            </div>
           )}}
       </Query>
     );

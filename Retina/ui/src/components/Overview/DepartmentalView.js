@@ -1,21 +1,30 @@
-import React from 'react';
+import React, { Component } from 'react';
 import {
-    Radar, RadarChart, PolarGrid, Legend,
-    PolarAngleAxis, PolarRadiusAxis,
-  } from 'recharts';
+  ComposedChart, Line, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  Legend,
+} from 'recharts';
 
-export default class Department extends React.Component {
-      
-    render() {
-        return (
-            <RadarChart outerRadius={200} width={850} height={500} data={this.props.data}>
-                <PolarGrid />
-                <PolarAngleAxis dataKey="name" />
-                <PolarRadiusAxis angle={30} domain={[0, 80]} />
-                <Radar name="Responses" dataKey="responses" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-                <Radar name="Registrations" dataKey="registrations" stroke="#f44336" fill="#f44336" fillOpacity={0.6} />
-                <Legend />
-            </RadarChart>
-        );
-    }
+
+export default class DepartmentalView extends Component {
+
+  render() {
+    return (
+      <ComposedChart
+        layout="vertical"
+        width={1000}
+        height={3000}
+        data={this.props.data}
+        margin={{
+          top: 20, right: 20, bottom: 20, left: 20,
+        }}
+      >
+        <CartesianGrid stroke="#f5f5f5" />
+        <XAxis type="number" />
+        <YAxis dataKey="code" type="category" />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="registrations" barSize={20} fill="#82ca9d" />
+      </ComposedChart>
+    );
+  }
 }

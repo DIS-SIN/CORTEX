@@ -1,88 +1,45 @@
-import React from "react";
-import { Query } from "react-apollo";
-import gql from "graphql-tag";
+import React, { Component } from 'react';
 import {
-    ResponsiveContainer, ComposedChart, Line, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  } from 'recharts';
+  ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, Cell
+} from 'recharts';
 
-class Instructor extends React.Component {
-  constructor(props) {
+const colors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+const data = [
+  { x: 100, y: 200, z: 200 },
+  { x: 120, y: 100, z: 260 },
+  { x: 170, y: 300, z: 400 },
+  { x: 140, y: 250, z: 280 },
+  { x: 150, y: 400, z: 500 },
+  { x: 110, y: 280, z: 200 },
+];
+
+export default class InstructorView extends Component {
+  
+  constructor(props){
     super(props);
-
-    this.state = {
-      order: "asc",
-      orderBy: "code",
-      page: 0,
-      rowsPerPage: 500
-    };
   }
 
   render() {
     return (
-      <Query
-        query={gql`query instructorQuery(
-            $code: String
-            $from: String
-            $to: String
-        ){
-          get_offerings(code:$code, from:$from, to:$to){
-            instructors{
-              name
-            }
-          }
-        }
-    `}
-    variables={{
-        code: this.props.code,
-        from: this.props.from,
-        to: this.props.to
-    }}>
-        {({ loading, error, data }) => {
-          if (loading) return <p class="d-flex justify-content-center mt-5">Loading...</p>;
-          if (error) return <p class="d-flex justify-content-center mt-5">Error</p>; if (!data.get_offerings) return <p class="d-flex justify-content-center mt-5">Empty set!</p>;
-          
-          let inst_data = []
-          
-          for(let off of data.get_offerings){
-            for(let inst of off.instructors){
-              let instructor = inst_data.find(i => i.name === inst.name);
-
-              if(!instructor){
-                  inst_data.push({name:inst.name, offerings:1});
-              }else{
-                  instructor.offerings++;
-              }
-            }
-          }
-
-          if (inst_data.length == 0 || inst_data === undefined) return <p class="d-flex justify-content-center mt-5">Empty set!</p>;
-
-          return (
-            <div style={{ width: '100%', height: 300 }}>
-                <ResponsiveContainer>
-                    <ComposedChart
-                        width={900}
-                        height={400}
-                        data={inst_data}
-                        margin={{
-                        top: 20, right: 20, bottom: 20, left: 20,
-                        }}
-                    >
-                        <CartesianGrid stroke="#f5f5f5" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Area type="monotone" dataKey="offerings" fill="#8884d8" stroke="#8884d8" />
-                        <Bar dataKey="offerings" barSize={20} fill="#413ea0" />
-                    </ComposedChart>
-                </ResponsiveContainer>       
-            </div>
-          );
+      <ScatterChart
+        width={400}
+        height={400}
+        margin={{
+          top: 20, right: 20, bottom: 20, left: 20,
         }}
-      </Query>
+      >
+        <CartesianGrid />
+        <XAxis type="number" dataKey="x" name="Registrations" />
+        <YAxis type="number" dataKey="y" name="Offerings"  />
+        <ZAxis type="number" dataKey="z" range={[60, 400]} name="score" />
+        <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+        <Scatter name="A school" data={data} fill="#8884d8">
+          {
+            data.map((entry, index) => <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />)
+          }
+        </Scatter>
+      </ScatterChart>
     );
   }
 }
-
-export default Instructor;
