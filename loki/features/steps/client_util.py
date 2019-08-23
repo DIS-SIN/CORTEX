@@ -94,6 +94,10 @@ def consume_messages(context, group_id, topic, uid):
                     print('payload', payload)
                     if 'uid' in payload and payload['uid'].startswith(uid):
                         return True
+                    if 'data' in payload:
+                        for item in payload['data']:
+                            if item['uid'].startswith(uid):
+                                return True
 
     except KeyboardInterrupt:
         sys.stderr.write('%% Aborted by user\n')

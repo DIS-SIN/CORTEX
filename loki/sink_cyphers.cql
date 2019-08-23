@@ -1,35 +1,35 @@
 >>>SURVEY_JSON
 WITH event, apoc.convert.fromJsonMap(event.content) AS c
-  // Make (or update) the Survey, setting the ID and format 
+  // Make (or update) the Survey, setting the ID and format
   MERGE (s:Valhalla_Survey {uid: event.uid, format: event.format})
 WITH s, c
   // Set the survey title, description (w/both languages) version number and valid date range
   SET s.title = [c['title']['en'], c['title']['fr']], s.description = [c['description']['en'], c['description']['fr']], s.valid = [c['valid']['from'], c['valid']['to']], s.version = c.version
 
 WITH s, c['questions'] AS questions
-  // Transform event.content.questions to individual rows with variable name cq 
+  // Transform event.content.questions to individual rows with variable name cq
   UNWIND questions AS cq
 
 WITH s, cq
-  
+
   // If event.content.question.qid is not 'none'
   FOREACH (dummy IN CASE WHEN cq['qid'] <> 'none' THEN [1] ELSE [] END |
-    
+
     // Make (or update) the Question, setting the uid
     MERGE (q:Valhalla_Question {uid: cq['cortex']['uid']})
-    
+
     // If questionType is SINGLE_CHOICE, set Question.SINGLE_CHOICE
     FOREACH (dummy IN CASE WHEN cq['cortex']['questionType'] = 'SINGLE_CHOICE' THEN [1] ELSE [] END | SET q:SINGLE_CHOICE)
-    
+
     // If questionType is MULTI_CHOICE, set Question.MULTI_CHOICE
     FOREACH (dummy IN CASE WHEN cq['cortex']['questionType'] = 'MULTI_CHOICE' THEN [1] ELSE [] END | SET q:MULTI_CHOICE)
-    
+
     // If questionType is FREE_TEXT, set Question.FREE_TEXT
     FOREACH (dummy IN CASE WHEN cq['cortex']['questionType'] = 'FREE_TEXT' THEN [1] ELSE [] END | SET q:FREE_TEXT)
-    
-    // Set this questions type, set the question text (both languages), classification, and using apoc to convert to Json set the options 
+
+    // Set this questions type, set the question text (both languages), classification, and using apoc to convert to Json set the options
     SET q.type = cq['cortex']['questionType'], q.question = [cq['question']['en'], cq['question']['fr']], q.classified_as = cq['cortex']['classifiedAs'], q.options = apoc.convert.toJson(cq['options'])
-    
+
     // Make (or update) a relationship from this Question to the original Survey
     // Set the relationships prop n to event.content.questions[cortex][atOrder]
     MERGE (q)<-[:AT_ORDER {n: cq['cortex']['atOrder']}]-(s)
@@ -43,7 +43,7 @@ WITH event, apoc.convert.fromJsonMap(event.content) AS c
   // Make (or update) the Survey, setting uid from event.response.conducted
   MERGE (s:Valhalla_Survey {uid: c['response']['conducted']})
 
-    //Make (or update) the Response, set the uid 
+    //Make (or update) the Response, set the uid
     MERGE (r:Valhalla_Response {uid: event.uid})
 
       // Make relationship from the Response to the Survey
@@ -83,20 +83,20 @@ WITH r, c, c['respondent'] AS cr
       // Relate respondent to org information
       MERGE (a:GC_Org {en_name: TRIM(SPLIT(cr.in_department, '(')[0])})
         MERGE (d)-[:IN_DEPARTMENT]->(a))
-    
+
     // If cr.work_as is not null/empty
     FOREACH (dummy IN CASE WHEN cr.work_as IS NOT NULL THEN [1] ELSE [] END |
       // Make the classification from cr.work_as, trimming any leading/trailing spaces
       // Make a relationship from respondent to classification
       MERGE (a:GC_ClsLvl {uid: TRIM(cr.work_as)})
         MERGE (d)-[:WORK_AS]->(a))
-    
-    // Make a relationship from respondent to response, setting the creation information 
+
+    // Make a relationship from respondent to response, setting the creation information
     MERGE (d)-[:RESPONDENT_OF]->(r)
       SET r.created = [c['created']['from'], c['created']['to']]
-  
+
   WITH r, c, c['questions'] AS questions
-    // Transform event.content.questions to individual rows with variable name cq 
+    // Transform event.content.questions to individual rows with variable name cq
     UNWIND questions AS cq
   WITH r, c, cq
     // Make Question, setting the uid
@@ -105,7 +105,7 @@ WITH r, c, c['respondent'] AS cr
   // If stats are null, then map is empty
   // If stats are not null, then map is read from stats (converted using apoc)
   WITH r, c, cq, q, CASE WHEN q.stats IS NULL THEN apoc.map.fromPairs([]) ELSE apoc.convert.fromJsonMap(q.stats) END AS map
-    
+
     // If Valhalla_Question type (set from JSON_SURVEY) does not equal classified
     FOREACH (dummy IN CASE WHEN q.type <> 'CLASSIFIED' THEN [1] ELSE [] END |
       // If the current question type is SINGLE CHOICE or FREE TEXT
@@ -189,12 +189,14 @@ WITH r, c, c['respondent'] AS cr
             SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, a.name, apoc.map.get(map, a.name, 0) + 1)),
                 q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
     )
-    // Alias the respondent, content, question, question stats as map
-    WITH r, c, q, apoc.map.fromPairs([['uid', q.uid], ['total', q.answer_total], ['stats', q.stats]]) AS map
+    // Alias the respondent, content, questions as collection
+    WITH  DISTINCT(r) AS r, c, COLLECT(DISTINCT(q)) AS qc
+    WITH r, c, REDUCE(m=[], q IN qc | m + [apoc.map.fromPairs([['uid', q.uid], ['total', q.answer_total], ['stats', q.stats], ['classifiedAs', q.classified_as], ['questionType', q.type]])]) AS data
+    WITH r, c, apoc.map.fromPairs([['uid', r.uid], ['data', data]]) AS map
         // Publish this map to kafka, using topic survey_metrics
         CALL streams.publish('survey_metrics', map)
-    WITH DISTINCT(r) AS r, c, REDUCE(m=[], q IN c['questions'] | CASE WHEN q['questionType'] = 'FREE_TEXT' THEN m + [apoc.map.fromPairs([['uid', q['uid']], ['text', q['questionAnswer']]])] ELSE m END) AS data
-     
+
+    WITH r, c, REDUCE(m=[], q IN c['questions'] | CASE WHEN q['questionType'] = 'FREE_TEXT' THEN m + [apoc.map.fromPairs([['uid', q['uid']], ['text', q['questionAnswer']]])] ELSE m END) AS data
     WITH apoc.map.fromPairs([['uid', r.uid], ['data', data]]) AS map
         CALL streams.publish('nlp_process', map)
     RETURN 1
