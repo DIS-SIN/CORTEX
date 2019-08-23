@@ -86,11 +86,14 @@ def consume_messages(context, group_id, topic, uid):
                     continue
 
                 msg_str = msg.value().decode()
-                print(msg_str)
-                payload = json.loads(msg_str)['payload']
-                print(payload)
-                if payload['uid'].startswith(uid):
-                    return True
+                print('msg_str', msg_str)
+
+                json_obj = json.loads(msg_str)
+                if 'payload' in json_obj:
+                    payload = json_obj['payload']
+                    print('payload', payload)
+                    if 'uid' in payload and payload['uid'].startswith(uid):
+                        return True
 
     except KeyboardInterrupt:
         sys.stderr.write('%% Aborted by user\n')

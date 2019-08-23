@@ -60,12 +60,6 @@ def step_impl(context, question_uid):
     assert find_metrics_updates(context, question_uid) is not None
 
 
-@then('it sends free text answers via "{topic}" to Asgard')
-def step_impl(context, topic):
-    count = find_free_text_nodes(context, context.response_uid)
-    assert int(count) == 1
-
-
 @then('Asgard receives a free text answer "{text}" via "{topic}"')
 def step_impl(context, text, topic):
     found = consume_messages(context, 'asgard_grp', topic, context.response_uid)

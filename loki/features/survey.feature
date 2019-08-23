@@ -16,7 +16,6 @@ Feature: Survey design and distribution
      Given Thor creates a "evalhalla_survey_response" and sent this response via "survey_response" to Jotunheimr
       When Jotunheimr extracts "11" answers
       Then it updates aggreagated metrics of "test_sur_q_6" to contains the received response
-      And it sends free text answers via "nlp_process" to Asgard
       And Asgard receives a free text answer "This is what" via "nlp_process"
       And it sends "0.1" as its sentiment value via "nlp_result" to Jotuheimr
       And Jotunheimr persists this sentiment "0.1" value for "q_9"
