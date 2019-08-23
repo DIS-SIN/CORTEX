@@ -2,39 +2,12 @@ import json
 import requests
 
 
-SURVEY_VALUE_SCHEMA = {
-    "value_schema": """
-    {
-        "namespace": "CORTEX",
-        "name": "survey",
-        "type": "record",
-        "fields": [
-            {"name": "uid", "type": "string"},
-            {"name": "format", "type": "string"},
-            {"name": "content", "type": "string"}
-        ]
-    }
-    """,
-    "records": [
-        "%s"
-    ]
-}
-
-
 def produce_message_via_proxy(context, topic, format, content):
     producer_topic_url = '%s/%s' % (context.rest_proxy_topic_url, context.topics[topic])
     topic_url = '%s/%s' % (context.rest_proxy_topic_url, context.topics[topic])
-    survey_json = json.loads(content)
-    payload = {
-        "uid": survey_json['uid'],
-        "format": format,
-        "content": content
-    }
+    payload = {"uid": json.loads(content)['uid'], "format": format, "content": content}
     data = context.rest_proxy_schema % json.dumps(payload)
-    r = requests.post(topic_url, headers={
-        "Content-Type": "application/vnd.kafka.avro.v2+json",
-        "Accept": "application/vnd.kafka.v2+json"
-    }, data=data)
+    r = requests.post(topic_url, headers={"Content-Type": "application/vnd.kafka.avro.v2+json", "Accept": "application/vnd.kafka.v2+json"}, data=data)
     return r
 
 

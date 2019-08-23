@@ -10,24 +10,24 @@ from confluent_kafka.avro.serializer import SerializerError
 
 SURVEY_VALUE_SCHEMA = """
 {
-    "value_schema": "{\\"namespace\\": \\"CORTEX\\", \\"name\\": \\"survey\\", \\"type\\": \\"record\\", \\"fields\\": [{\\"name\\": \\"uid\\", \\"type\\": \\"string\\"}, {\\"name\\": \\"format\\", \\"type\\": \\"string\\"}, {\\"name\\": \\"content\\", \\"type\\": \\"string\\"}]}",
+    "value_schema": "{\\"namespace\\": \\"CORTEX\\", \\"name\\": \\"Survey\\", \\"type\\": \\"record\\", \\"fields\\": [{\\"name\\": \\"uid\\", \\"type\\": \\"string\\"}, {\\"name\\": \\"format\\", \\"type\\": \\"string\\"}, {\\"name\\": \\"content\\", \\"type\\": \\"string\\"}]}",
     "records": [
         {"value": %s}
     ]
 }
 """
 
-RESPONSE_VALUE_SCHEMA = {
-    "value_schema": {
-        "namespace": "CORTEX",
-        "name": "response",
-        "type": "record",
-        "fields": [
-            {"name": "uid", "type": "string"},
-            {"name": "content", "type": "string"}
-        ]
-    }
+RESPONSE_VALUE_SCHEMA = """
+{
+    "namespace": "CORTEX",
+    "name": "Response",
+    "type": "record",
+    "fields": [
+        {"name": "uid", "type": "string"},
+        {"name": "content", "type": "string"}
+    ]
 }
+"""
 
 SENTIMENT_VALUE_SCHEMA = {
     "namespace": "CORTEX",
@@ -62,11 +62,8 @@ def before_all(context):
     context.rest_proxy_consumer_url = "http://%s/consumers" % context.rest_proxy_url
     context.rest_proxy_schema = SURVEY_VALUE_SCHEMA
 
-    context.designer_proxy_session = requests.Session()
-    context.player_proxy_session = requests.Session()
-
     context.broker_url = context.config.userdata.get("yggdrasil_broker")
-    context.schema_registry_url = "http://%s/" % context.config.userdata.get("yggdrasil_schema_registry")
+    context.schema_registry_url = "http://%s" % context.config.userdata.get("yggdrasil_schema_registry")
 
     context.neo4j_conf = {
         'neo4j_bolt_server': 'bolt://%s' % context.config.userdata.get("jotunheimr"),
@@ -74,14 +71,8 @@ def before_all(context):
         'neo4j_password': '##dis@da2019##',
     }
 
-    # context.player_producer = AvroProducer(
-    #     {
-    #         'bootstrap.servers': context.broker_url,
-    #         'schema.registry.url': context.schema_registry_url
-    #     },
-    #     default_value_schema=avro.loads(RESPONSE_VALUE_SCHEMA)
-    # )
-    #
+    context.player_schema = avro.loads(RESPONSE_VALUE_SCHEMA)
+
     # context.asgard_consumer = AvroConsumer({
     #     'bootstrap.servers': context.broker_url,
     #     'group.id': 'asgard_consumer',
@@ -97,11 +88,3 @@ def before_all(context):
     # )
     #
     # context.visualiser_consumer.subscribe([context.topics["survey_metrics", "nlp_result"]])
-
-
-def after_all(context):
-    context.designer_proxy_session.close()
-    context.player_proxy_session.close()
-    # context.asgard_consumer.close()
-    # context.visualiser_consumer.close()
-    # context.visualiser_neo4j_adapter.close()

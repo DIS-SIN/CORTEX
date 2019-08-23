@@ -1,7 +1,9 @@
 from behave import *
 from hash_util import get_content, get_md5
 from proxy_util import produce_message_via_proxy, consume_message_via_proxy
-from neo4j_util import find_questions_of_survey
+from neo4j_util import find_questions_of_survey, find_number_of_answers, find_metrics_updates, find_free_text_nodes
+from client_util import produce_message, consume_messages
+from time import sleep
 
 
 @given('the Trash collecting system with name "{name}" is created in Valhalla Designer')
@@ -37,56 +39,54 @@ def step_impl(context, survey_uid, question_uids):
     assert sorted(r_uids) == sorted(q_uids)
 
 
-@given('Thor creates a "{response}" to "{name}" survey')
-def step_impl(context, response, name):
-    pass
+@given('Thor creates a "{response}" and sent this response via "{topic}" to Jotunheimr')
+def step_impl(context, response, topic):
+    file_name = '%s.json' % response
+    text = get_content(file_name)
+    uid = get_md5(text)
+    context.response_uid = uid
+    produce_message(context, topic, uid, text)
 
 
-@when('he sent this response via "{topic}" to Jotunheimr')
-def step_impl(context, topic):
-    pass
-
-
-@then('Jotunheimr extracts "{number}" answers')
+@when('Jotunheimr extracts "{number}" answers')
 def step_impl(context, number):
-    pass
+    sleep(3)
+    n_of_answers = find_number_of_answers(context, context.response_uid)
+    assert int(n_of_answers) == int(number)
 
 
-@then('updates aggreagated metricsto contains response "{type}" from "{datetime}"')
-def step_impl(context, type, datetime):
-    pass
+@then('it updates aggreagated metrics of "{question_uid}" to contains the received response')
+def step_impl(context, question_uid):
+    assert find_metrics_updates(context, question_uid) is not None
 
 
-@then('and send free text answers via "{topic}" to Asgard')
+@then('it sends free text answers via "{topic}" to Asgard')
 def step_impl(context, topic):
-    pass
+    count = find_free_text_nodes(context, context.response_uid)
+    assert int(count) == 1
 
 
-@given('Asgard receives a free text answer "{text}" via "{topic}"')
+@then('Asgard receives a free text answer "{text}" via "{topic}"')
 def step_impl(context, text, topic):
-    pass
+    found = consume_messages(context, 'asgard_grp', topic, context.response_uid)
+    assert found == True
 
 
-@when('it sends "{value}" as its sentiment value via "{topic}" to Jotuheimr')
-def step_impl(context, name):
+@then('it sends "{value}" as its sentiment value via "{topic}" to Jotuheimr')
+def step_impl(context, value, topic):
     pass
 
 
 @then('Jotunheimr persists this sentiment "{value}" value for "{question_uid}"')
-def step_impl(context, name):
+def step_impl(context, value, question_uid):
     pass
 
 
-@given('the Visualizer queries responses for "{survey}"')
-def step_impl(context, name):
-    pass
+@then('metrics of "{survey_uid}" arrive via "{topic}"')
+def step_impl(context, survey_uid, topic):
+    found = consume_messages(context, 'visualizer_grp', topic, survey_uid)
+    assert found == True
 
-
-@when('metrics arrive via "{topic}"')
-def step_impl(context, name):
-    pass
-
-
-@then('sentiment value {value} also come via "{topic}"')
-def step_impl(context, value name):
+@then('the sentiment value {value} also come via "{topic}"')
+def step_impl(context, value, topic):
     pass
