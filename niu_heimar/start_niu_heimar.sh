@@ -1,8 +1,8 @@
 #!/bin/bash
 
 if [ $# -lt 2 ]; then
-  echo "Usage: ./start_yggdrasil.sh <local_ip> <neo4j_dir>"
-  echo "Example: ./start_yggdrasil.sh 10.0.1.119 ~/neo4j"
+  echo "Usage: ./niu_heimar.sh <local_ip> <neo4j_dir>"
+  echo "Example: ./niu_heimar.sh 10.0.1.119 ~/neo4j"
   exit
 fi
 
@@ -29,7 +29,7 @@ if [[ ! -d "$PLUGINS/neo4j-kafka-connect-neo4j-1.0.3" ]]; then
 fi
 
 
-docker-compose -f yggdrasil.yml up -d --build
+docker-compose -f niu_heimar.yml up -d --build
 
 echo "Install kafkacat ..."
 unameOut="$(uname -s)"

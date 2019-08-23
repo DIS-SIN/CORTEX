@@ -168,6 +168,11 @@ services:
       - 7474:7474
       - 7473:7473
       - 7687:7687
+    depends_on:
+      - yggdrasil_zookeeper
+      - yggdrasil_broker
+      - yggdrasil_schema_registry
+      - yggdrasil_connect
     volumes:
       - ${NEO4J_GDB_DATA:-~/neo4j/data}:/data
       - ${NEO4J_GDB_IMPT:-~/neo4j/import}:/import
@@ -195,5 +200,17 @@ services:
       - NEO4J_streams_procedures_enable=true
       - NEO4J_streams_sink_enabled=true
       - NEO4J_streams_source_enabled=true
-      # - NEO4J_streams_source_topic_nodes_survey__metrics=Valhalla_Question{stats,answer_total}
+      - NEO4J_streams_source_topic_nodes_survey__metrics=Valhalla_Question{uid,type,classified_as,stats,answer_total}
       # - NEO4J_streams_source_topic_relationships_x_relation=BELONGS_TO{*}
+
+  ####################
+  # halin
+  #
+  halin:
+    image: mdavidallen/halin:latest
+    hostname: halin
+    container_name: halin
+    ports:
+      - 3000:3000
+    depends_on:
+      - jotunheimr
