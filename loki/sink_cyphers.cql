@@ -48,6 +48,8 @@ WITH event, apoc.convert.fromJsonMap(event.content) AS c
 
       // Make relationship from the Response to the Survey
       MERGE (r)-[:RESPOND_TO]->(s)
+        SET r.survey_uid = c['response']['conducted'], r.content = event.content
+
 //Alias the Response as r, c as c, and event.content.respondent as cr (user information)
 WITH r, c, c['respondent'] AS cr
 
@@ -62,18 +64,20 @@ WITH r, c, c['respondent'] AS cr
 
     // If cr.located_in is not null/empty
     FOREACH (dummy IN CASE WHEN cr.located_in IS NOT NULL THEN [1] ELSE [] END |
-      // Make the city information by:
-      // Split the event.content.respondent.located_in based on a comma, take the first record
-      // Trim leading/trailing spaces
-
       // Make the province information by:
       // Split the event.content.respondent.located_in based on a comma, take the second record
-      // Trim leading/trailing spaces
-      // Split last result based on space, take the first record
+      MERGE (p:CP_Province {uid: SPLIT(TRIM(SPLIT(cr.located_in, ',')[1]), ' ')[0]})
 
-      // Relate respondent to city information
-      MERGE (a:CP_CSD {name: TRIM(SPLIT(cr.located_in, ',')[0])})-[:CSD_IN_PR]->(p:CP_Province {uid: SPLIT(TRIM(SPLIT(cr.located_in, ',')[1]), ' ')[0]})
-        MERGE (d)-[:LOCATED_IN]->(a))
+        // Make the city information by:
+        // Split the event.content.respondent.located_in based on a comma, take the first record
+        // Trim leading/trailing spaces
+      	MERGE (a:CP_CSD {name: TRIM(SPLIT(cr.located_in, ',')[0])})
+
+          // Relate city to province information
+        	MERGE (a)-[:CSD_IN_PR]->(p)
+
+            // Relate respondent to city information
+        		MERGE (d)-[:LOCATED_IN]->(a))
 
     // If cr.department is not null/empty
     FOREACH (dummy IN CASE WHEN cr.in_department IS NOT NULL THEN [1] ELSE [] END |
@@ -183,21 +187,23 @@ WITH r, c, c['respondent'] AS cr
     // Add the new question stats to the map, then set the stats for the question
     // Increment the answer counter + 1 (or set to 1 if first time)
     FOREACH (dummy IN CASE WHEN q.classified_as = 'CP_CSD' THEN [1] ELSE [] END |
-      MERGE (a:CP_CSD {name: TRIM(SPLIT(cq['questionAnswer'], ',')[0])})-[:CSD_IN_PR]->(p:CP_Province {uid: SPLIT(TRIM(SPLIT(cq['questionAnswer'], ',')[1]), ' ')[0]})
-        MERGE (r)-[:AT_ORDER {n: cq['atOrder']}]->(a)
-          MERGE (a)-[:ANSWER_OF]->(q)
-            SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, a.name, apoc.map.get(map, a.name, 0) + 1)),
-                q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
+      MERGE (p:CP_Province {uid: SPLIT(TRIM(SPLIT(cq['questionAnswer'], ',')[1]), ' ')[0]})
+        MERGE (a:CP_CSD {name: TRIM(SPLIT(cq['questionAnswer'], ',')[0])})
+          MERGE (a)-[:CSD_IN_PR]->(p)
+            MERGE (r)-[:AT_ORDER {n: cq['atOrder']}]->(a)
+              MERGE (a)-[:ANSWER_OF]->(q)
+                SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, a.name, apoc.map.get(map, a.name, 0) + 1)),
+                    q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
     )
     // Alias the respondent, content, questions as collection
     WITH  DISTINCT(r) AS r, c, COLLECT(DISTINCT(q)) AS qc
-    WITH r, c, REDUCE(m=[], q IN qc | m + [apoc.map.fromPairs([['uid', q.uid], ['total', q.answer_total], ['stats', q.stats], ['classifiedAs', q.classified_as], ['questionType', q.type]])]) AS data
-    WITH r, c, apoc.map.fromPairs([['uid', r.uid], ['data', data]]) AS map
+    WITH r, c, REDUCE(m=[], q IN qc | m + [apoc.map.fromPairs([['uid', q.uid], ['total', q.answer_total], ['stats', q.stats], ['classifiedAs', q.classified_as], ['questionType', q.type], ['question', apoc.convert.toJson(q.question)]])]) AS data
+    WITH r, c, apoc.map.fromPairs([['uid', r.uid], ['survey_uid', r.survey_uid], ['data', data]]) AS map
         // Publish this map to kafka, using topic survey_metrics
         CALL streams.publish('survey_metrics', map)
 
     WITH r, c, REDUCE(m=[], q IN c['questions'] | CASE WHEN q['questionType'] = 'FREE_TEXT' THEN m + [apoc.map.fromPairs([['uid', q['uid']], ['text', q['questionAnswer']]])] ELSE m END) AS data
-    WITH apoc.map.fromPairs([['uid', r.uid], ['data', data]]) AS map
+    WITH apoc.map.fromPairs([['uid', r.uid], ['survey_uid', r.survey_uid], ['data', data]]) AS map
         CALL streams.publish('nlp_process', map)
     RETURN 1
 <<<
