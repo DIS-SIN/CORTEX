@@ -12,6 +12,7 @@
     "neo4j.authentication.basic.username": "neo4j",
     "neo4j.authentication.basic.password": "##dis@da2019##",
     "neo4j.encryption.enabled": false,
+    "neo4j.batch.size": "1",
     "neo4j.topic.cypher.survey_json": "{SURVEY_JSON}",
     "neo4j.topic.cypher.survey_response": "{SURVEY_RESPONSE}"
   }

@@ -1,5 +1,6 @@
 import hashlib
 import json
+from time import sleep
 import sys
 
 from confluent_kafka import avro, Consumer
@@ -40,11 +41,11 @@ RESPONSE_VALUE_SCHEMA_STR = """
 RESPONSE_VALUE_SCHEMA = avro.loads(RESPONSE_VALUE_SCHEMA_STR)
 
 SURVEYS = {
-    'test_sur': {
-        'survey_evalese': 'data/evalhalla_test_sur_survey_evalese.json',
-        'survey_json': 'data/evalhalla_test_sur_survey_template.json',
-        'survey_response': 'data/evalhalla_test_sur_1k_cortexresp_test_data.json',
-    },
+    # 'test_sur': {
+    #     'survey_evalese': 'data/evalhalla_test_sur_survey_evalese.json',
+    #     'survey_json': 'data/evalhalla_test_sur_survey_template.json',
+    #     'survey_response': 'data/evalhalla_test_sur_1k_cortexresp_test_data.json',
+    # },
     'ELDP': {
         'survey_evalese': 'data/evalhalla_edlp_survey_evalese.json',
         'survey_json': 'data/evalhalla_edlp_survey_template.json',
@@ -212,35 +213,35 @@ if __name__ == '__main__':
 
     produce_messages(designer_producer, player_producer)
 
-    player_consumer = AvroConsumer({
-        'bootstrap.servers': broker_url,
-        'group.id': 'player_group',
-        'session.timeout.ms': 6000,
-        'auto.offset.reset': 'earliest',
-        'schema.registry.url': schema_registry_url,
-    })
-    player_consumer.subscribe(['survey_evalese', 'survey_json'])
-    consume_messages(player_consumer, 4)
-    player_consumer.close()
-
-    asgard_consumer = Consumer({
-        'bootstrap.servers': broker_url,
-        'group.id': 'asgard_group',
-        'session.timeout.ms': 6000,
-        'auto.offset.reset': 'earliest'
-    })
-    asgard_consumer.subscribe(['nlp_process'])
-    consume_messages(asgard_consumer, 2)
-    asgard_consumer.close()
-
-    visualizer_consumer = Consumer({
-        'bootstrap.servers': broker_url,
-        'group.id': 'visualizer_group',
-        'session.timeout.ms': 6000,
-        'auto.offset.reset': 'earliest'
-    })
-    visualizer_consumer.subscribe(['survey_metrics'])
-    messages = consume_messages(visualizer_consumer, 2000)
-    visualizer_consumer.close()
-
-    write_rows(messages)
+    # player_consumer = AvroConsumer({
+    #     'bootstrap.servers': broker_url,
+    #     'group.id': 'player_group',
+    #     'session.timeout.ms': 6000,
+    #     'auto.offset.reset': 'earliest',
+    #     'schema.registry.url': schema_registry_url,
+    # })
+    # player_consumer.subscribe(['survey_evalese', 'survey_json'])
+    # consume_messages(player_consumer, 2)
+    # player_consumer.close()
+    #
+    # asgard_consumer = Consumer({
+    #     'bootstrap.servers': broker_url,
+    #     'group.id': 'asgard_group',
+    #     'session.timeout.ms': 6000,
+    #     'auto.offset.reset': 'earliest'
+    # })
+    # asgard_consumer.subscribe(['nlp_process'])
+    # consume_messages(asgard_consumer, 1000)
+    # asgard_consumer.close()
+    #
+    # visualizer_consumer = Consumer({
+    #     'bootstrap.servers': broker_url,
+    #     'group.id': 'visualizer_group',
+    #     'session.timeout.ms': 6000,
+    #     'auto.offset.reset': 'earliest'
+    # })
+    # visualizer_consumer.subscribe(['survey_metrics'])
+    # messages = consume_messages(visualizer_consumer, 1000)
+    # visualizer_consumer.close()
+    #
+    # write_rows(messages)
