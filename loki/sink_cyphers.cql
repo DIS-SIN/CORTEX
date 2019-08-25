@@ -99,111 +99,117 @@ WITH r, c, c['respondent'] AS cr
     MERGE (d)-[:RESPONDENT_OF]->(r)
       SET r.created = [c['created']['from'], c['created']['to']]
 
-  WITH r, c, c['questions'] AS questions
-    // Transform event.content.questions to individual rows with variable name cq
-    UNWIND questions AS cq
-  WITH r, c, cq
-    // Make Question, setting the uid
-    MERGE (q:Valhalla_Question {uid: cq['uid']})
+WITH r, c, c['questions'] AS questions
+  // Transform event.content.questions to individual rows with variable name cq
+  UNWIND questions AS cq
+WITH r, c, cq
+  // Make Question, setting the uid
+  MERGE (q:Valhalla_Question {uid: cq['uid']})
 
-  // If stats are null, then map is empty
-  // If stats are not null, then map is read from stats (converted using apoc)
-  WITH r, c, cq, q, CASE WHEN q.stats IS NULL THEN apoc.map.fromPairs([]) ELSE apoc.convert.fromJsonMap(q.stats) END AS map
+// If stats are null, then map is empty
+// If stats are not null, then map is read from stats (converted using apoc)
+WITH r, c, cq, q, CASE WHEN q.stats IS NULL THEN apoc.map.fromPairs([]) ELSE apoc.convert.fromJsonMap(q.stats) END AS map
 
-    // If Valhalla_Question type (set from JSON_SURVEY) does not equal classified
-    FOREACH (dummy IN CASE WHEN q.type <> 'CLASSIFIED' THEN [1] ELSE [] END |
-      // If the current question type is SINGLE CHOICE or FREE TEXT
-      FOREACH (dummy IN CASE WHEN (cq['questionType'] = 'SINGLE_CHOICE' OR cq['questionType'] = 'FREE_TEXT') THEN [1] ELSE [] END |
-        // Make an Answer, setting the text
-        // Relate the response to this answer
-        // Relate this answer to the original question
-        MERGE (a:Valhalla_Answer {text: cq['questionAnswer']})
-          MERGE (r)-[:AT_ORDER {n: cq['atOrder']}]->(a)
-            MERGE (a)-[:ANSWER_OF]->(q)
-              // Add the new question stats to the map, then set the stats for the question
-              // Increment the answer counter + 1 (or set to 1 if first time)
-              SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, cq['questionAnswer'], apoc.map.get(map, cq['questionAnswer'], 0) + 1)),
-                  q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
-      )
-
-      // If the current question type is MULTI_CHOICE
-      FOREACH (dummy IN CASE WHEN cq['questionType'] = 'MULTI_CHOICE' THEN [1] ELSE [] END |
-        // Loop through the answers provided
-        FOREACH (answer IN cq['questionAnswer'] |
-          // Make an Answer object
-          MERGE (a:Valhalla_Answer {text: answer})
-            MERGE (r)-[:AT_ORDER {n: cq['atOrder']}]->(a)
-              MERGE (a)-[:ANSWER_OF]->(q)
-                // Add the new question stats to the map, then set the stats for the question
-                // Increment the answer counter + 1 (or set to 1 if first time)
-                SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, answer, apoc.map.get(map, answer, 0) + 1)),
-                    q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
-        )
-      )
-    )
-
-    // If the Valhalla_Question (set by JSON_SURVEY) is classified as GC Org
-    FOREACH (dummy IN CASE WHEN q.classified_as = 'GC_Org' THEN [1] ELSE [] END |
-      // Make (or update) the GC_Org
-      // set the en_name from the questionAnswer, removing the content after the first parenthesis
-      MERGE (a:GC_Org {en_name: TRIM(SPLIT(cq['questionAnswer'], '(')[0])})
+  // If Valhalla_Question type (set from JSON_SURVEY) does not equal classified
+  FOREACH (dummy IN CASE WHEN q.type <> 'CLASSIFIED' THEN [1] ELSE [] END |
+    // If the current question type is SINGLE CHOICE or FREE TEXT
+    FOREACH (dummy IN CASE WHEN (cq['questionType'] = 'SINGLE_CHOICE' OR cq['questionType'] = 'FREE_TEXT') THEN [1] ELSE [] END |
+      // Make an Answer, setting the text
+      // Relate the response to this answer
+      // Relate this answer to the original question
+      MERGE (a:Valhalla_Answer {text: cq['questionAnswer']})
         MERGE (r)-[:AT_ORDER {n: cq['atOrder']}]->(a)
           MERGE (a)-[:ANSWER_OF]->(q)
             // Add the new question stats to the map, then set the stats for the question
             // Increment the answer counter + 1 (or set to 1 if first time)
-            SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, a.en_name, apoc.map.get(map, a.en_name, 0) + 1)),
+            SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, cq['questionAnswer'], apoc.map.get(map, cq['questionAnswer'], 0) + 1)),
                 q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
     )
 
-    // If the Valhalla_Question (set by JSON_SURVEY) is classified as GC_Language
-    // Make (or update) the GC_Language
-    // set the name from the questionAnswer, removing the leading/trailing spaces
-    // Add the new question stats to the map, then set the stats for the question
-    // Increment the answer counter + 1 (or set to 1 if first time)
-    FOREACH (dummy IN CASE WHEN q.classified_as = 'GC_Language' THEN [1] ELSE [] END |
-      MERGE (a:GC_Language {name: TRIM(cq['questionAnswer'])})
-        MERGE (r)-[:AT_ORDER {n: cq['atOrder']}]->(a)
-          MERGE (a)-[:ANSWER_OF]->(q)
-            SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, a.name, apoc.map.get(map, a.name, 0) + 1)),
-                q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
+    // If the current question type is MULTI_CHOICE
+    FOREACH (dummy IN CASE WHEN cq['questionType'] = 'MULTI_CHOICE' THEN [1] ELSE [] END |
+      // Loop through the answers provided
+      FOREACH (answer IN cq['questionAnswer'] |
+        // Make an Answer object
+        MERGE (a:Valhalla_Answer {text: answer})
+          MERGE (r)-[:AT_ORDER {n: cq['atOrder']}]->(a)
+            MERGE (a)-[:ANSWER_OF]->(q)
+              // Add the new question stats to the map, then set the stats for the question
+              // Increment the answer counter + 1 (or set to 1 if first time)
+              SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, answer, apoc.map.get(map, answer, 0) + 1)),
+                  q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
+      )
     )
+  )
 
-    // If the Valhalla_Question (set by JSON_SURVEY) is classified as GC_Language
-    // Make (or update) the GC_Language
-    // set the name from the questionAnswer, removing the leading/trailing spaces
-    // Add the new question stats to the map, then set the stats for the question
-    // Increment the answer counter + 1 (or set to 1 if first time)
-    FOREACH (dummy IN CASE WHEN q.classified_as = 'GC_ClsLvl' THEN [1] ELSE [] END |
-      MERGE (a:GC_ClsLvl {uid: TRIM(cq['questionAnswer'])})
-        MERGE (r)-[:AT_ORDER {n: cq['atOrder']}]->(a)
-          MERGE (a)-[:ANSWER_OF]->(q)
-            SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, a.uid, apoc.map.get(map, a.uid, 0) + 1)),
-                q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
-    )
+WITH r, c, cq, q, CASE WHEN q.stats IS NULL THEN apoc.map.fromPairs([]) ELSE apoc.convert.fromJsonMap(q.stats) END AS map
+  // If the Valhalla_Question (set by JSON_SURVEY) is classified as GC Org
+  FOREACH (dummy IN CASE WHEN q.classified_as = 'GC_Org' THEN [1] ELSE [] END |
+    // Make (or update) the GC_Org
+    // set the en_name from the questionAnswer, removing the content after the first parenthesis
+    MERGE (a:GC_Org {en_name: TRIM(SPLIT(cq['questionAnswer'], '(')[0])})
+      MERGE (r)-[:AT_ORDER {n: cq['atOrder']}]->(a)
+        MERGE (a)-[:ANSWER_OF]->(q)
+          // Add the new question stats to the map, then set the stats for the question
+          // Increment the answer counter + 1 (or set to 1 if first time)
+          SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, TRIM(SPLIT(cq['questionAnswer'], '(')[0]), apoc.map.get(map, TRIM(SPLIT(cq['questionAnswer'], '(')[0]), 0) + 1)),
+              q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
+  )
 
-    // If the Valhalla_Question (set by JSON_SURVEY) is classified as GC_Language
-    // Make (or update) the GC_Language
-    // set the name from the questionAnswer, removing the leading/trailing spaces
-    // Add the new question stats to the map, then set the stats for the question
-    // Increment the answer counter + 1 (or set to 1 if first time)
-    FOREACH (dummy IN CASE WHEN q.classified_as = 'CP_CSD' THEN [1] ELSE [] END |
-      MERGE (p:CP_Province {uid: SPLIT(TRIM(SPLIT(cq['questionAnswer'], ',')[1]), ' ')[0]})
-        MERGE (a:CP_CSD {name: TRIM(SPLIT(cq['questionAnswer'], ',')[0])})
-          MERGE (a)-[:CSD_IN_PR]->(p)
-            MERGE (r)-[:AT_ORDER {n: cq['atOrder']}]->(a)
-              MERGE (a)-[:ANSWER_OF]->(q)
-                SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, a.name, apoc.map.get(map, a.name, 0) + 1)),
-                    q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
-    )
-    // Alias the respondent, content, questions as collection
-    WITH  DISTINCT(r) AS r, c, COLLECT(DISTINCT(q)) AS qc
-    WITH r, c, REDUCE(m=[], q IN qc | m + [apoc.map.fromPairs([['uid', q.uid], ['total', q.answer_total], ['stats', q.stats], ['classifiedAs', q.classified_as], ['questionType', q.type], ['question', apoc.convert.toJson(q.question)]])]) AS data
-    WITH r, c, apoc.map.fromPairs([['uid', r.uid], ['survey_uid', r.survey_uid], ['data', data]]) AS map
-        // Publish this map to kafka, using topic survey_metrics
-        CALL streams.publish('survey_metrics', map)
+WITH r, c, cq, q, CASE WHEN q.stats IS NULL THEN apoc.map.fromPairs([]) ELSE apoc.convert.fromJsonMap(q.stats) END AS map
+  // If the Valhalla_Question (set by JSON_SURVEY) is classified as GC_Language
+  // Make (or update) the GC_Language
+  // set the name from the questionAnswer, removing the leading/trailing spaces
+  // Add the new question stats to the map, then set the stats for the question
+  // Increment the answer counter + 1 (or set to 1 if first time)
+  FOREACH (dummy IN CASE WHEN q.classified_as = 'GC_Language' THEN [1] ELSE [] END |
+    MERGE (a:GC_Language {name: TRIM(cq['questionAnswer'])})
+      MERGE (r)-[:AT_ORDER {n: cq['atOrder']}]->(a)
+        MERGE (a)-[:ANSWER_OF]->(q)
+          SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, TRIM(cq['questionAnswer']), apoc.map.get(map, TRIM(cq['questionAnswer']), 0) + 1)),
+              q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
+  )
 
-    WITH r, c, REDUCE(m=[], q IN c['questions'] | CASE WHEN q['questionType'] = 'FREE_TEXT' THEN m + [apoc.map.fromPairs([['uid', q['uid']], ['text', q['questionAnswer']]])] ELSE m END) AS data
-    WITH apoc.map.fromPairs([['uid', r.uid], ['survey_uid', r.survey_uid], ['data', data]]) AS map
-        CALL streams.publish('nlp_process', map)
-    RETURN 1
+WITH r, c, cq, q, CASE WHEN q.stats IS NULL THEN apoc.map.fromPairs([]) ELSE apoc.convert.fromJsonMap(q.stats) END AS map
+  // If the Valhalla_Question (set by JSON_SURVEY) is classified as GC_Language
+  // Make (or update) the GC_Language
+  // set the name from the questionAnswer, removing the leading/trailing spaces
+  // Add the new question stats to the map, then set the stats for the question
+  // Increment the answer counter + 1 (or set to 1 if first time)
+  FOREACH (dummy IN CASE WHEN q.classified_as = 'GC_ClsLvl' THEN [1] ELSE [] END |
+    MERGE (a:GC_ClsLvl {uid: TRIM(cq['questionAnswer'])})
+      MERGE (r)-[:AT_ORDER {n: cq['atOrder']}]->(a)
+        MERGE (a)-[:ANSWER_OF]->(q)
+          SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, TRIM(cq['questionAnswer']), apoc.map.get(map, TRIM(cq['questionAnswer']), 0) + 1)),
+              q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
+  )
+
+WITH r, c, cq, q, CASE WHEN q.stats IS NULL THEN apoc.map.fromPairs([]) ELSE apoc.convert.fromJsonMap(q.stats) END AS map
+  // If the Valhalla_Question (set by JSON_SURVEY) is classified as GC_Language
+  // Make (or update) the GC_Language
+  // set the name from the questionAnswer, removing the leading/trailing spaces
+  // Add the new question stats to the map, then set the stats for the question
+  // Increment the answer counter + 1 (or set to 1 if first time)
+  FOREACH (dummy IN CASE WHEN q.classified_as = 'CP_CSD' THEN [1] ELSE [] END |
+    MERGE (p:CP_Province {uid: SPLIT(TRIM(SPLIT(cq['questionAnswer'], ',')[1]), ' ')[0]})
+      MERGE (a:CP_CSD {name: TRIM(SPLIT(cq['questionAnswer'], ',')[0])})
+        MERGE (a)-[:CSD_IN_PR]->(p)
+          MERGE (r)-[:AT_ORDER {n: cq['atOrder']}]->(a)
+            MERGE (a)-[:ANSWER_OF]->(q)
+              SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, TRIM(SPLIT(cq['questionAnswer'], ',')[0]), apoc.map.get(map, TRIM(SPLIT(cq['questionAnswer'], ',')[0]), 0) + 1)),
+                  q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
+  )
+
+WITH DISTINCT(r) AS r, c, COLLECT(DISTINCT(q)) AS qc
+WITH r, c, qc, REDUCE(m=[], q IN c['questions'] | CASE WHEN q['questionType'] = 'FREE_TEXT' THEN m + [apoc.map.fromPairs([['uid', q['uid']], ['text', q['questionAnswer']]])] ELSE m END) AS data
+WITH r, qc, apoc.map.fromPairs([['uid', r.uid], ['survey_uid', r.survey_uid], ['data', data]]) AS map
+    CALL streams.publish('nlp_process', map)
+
+// Alias the respondent, content, questions as collection
+WITH r, REDUCE(m=[], q IN qc | m + [apoc.map.fromPairs([['uid', q.uid], ['total', q.answer_total], ['stats', q.stats], ['classifiedAs', q.classified_as], ['questionType', q.type], ['question', apoc.convert.toJson(q.question)]])]) AS data
+WITH r, apoc.map.fromPairs([['uid', r.uid], ['survey_uid', r.survey_uid], ['data', data]]) AS map
+    // Publish this map to kafka, using topic survey_metrics
+    CALL streams.publish('survey_metrics', map)
+
+RETURN 1
 <<<

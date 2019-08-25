@@ -16,6 +16,7 @@ kafkacat -b $1:9092 -t test_topic_json -K: -P <<EOF
   2:{"title":"Gylfi kom til Ásgarðs","content":"Á baki létu blíkja, barðir váru grjóti, Sváfnis salnæfrar seggir hyggjandi."}
 EOF
 kafkacat -b $1:9092 -t test_topic_json -C -e
+python test_yggdrasil.py $1:9092 http://$1:8081 test_topic_avro
   ;;
 
   *)
