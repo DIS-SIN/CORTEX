@@ -41,11 +41,11 @@ RESPONSE_VALUE_SCHEMA_STR = """
 RESPONSE_VALUE_SCHEMA = avro.loads(RESPONSE_VALUE_SCHEMA_STR)
 
 SURVEYS = {
-    # 'test_sur': {
-    #     'survey_evalese': 'data/evalhalla_test_sur_survey_evalese.json',
-    #     'survey_json': 'data/evalhalla_test_sur_survey_template.json',
-    #     'survey_response': 'data/evalhalla_test_sur_1k_cortexresp_test_data.json',
-    # },
+    'test_sur': {
+        'survey_evalese': 'data/evalhalla_test_sur_survey_evalese.json',
+        'survey_json': 'data/evalhalla_test_sur_survey_template.json',
+        'survey_response': 'data/evalhalla_test_sur_1k_cortexresp_test_data.json',
+    },
     'ELDP': {
         'survey_evalese': 'data/evalhalla_edlp_survey_evalese.json',
         'survey_json': 'data/evalhalla_edlp_survey_template.json',
