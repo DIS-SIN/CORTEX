@@ -1,7 +1,7 @@
 {
-  "name": "TestSinkConnector",
+  "name": "AsgardSinkConnector",
   "config": {
-    "topics": "test_avro",
+    "topics": "nlp_result",
     "connector.class": "streams.kafka.connect.sink.Neo4jSinkConnector",
     "errors.retry.timeout": "-1",
     "errors.retry.delay.max.ms": "1000",
@@ -12,6 +12,6 @@
     "neo4j.authentication.basic.username": "neo4j",
     "neo4j.authentication.basic.password": "##dis@da2019##",
     "neo4j.encryption.enabled": false,
-    "neo4j.topic.cypher.test_avro": "MERGE (p:TestNode{name: event.name, text: event.text})"
+    "neo4j.topic.cypher.nlp_result": "MERGE (r:Valhalla_Response{uid: event.uid}) SET r.sentiment_values = apoc.convert.toJson(event.data)"
   }
 }
