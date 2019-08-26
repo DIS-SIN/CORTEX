@@ -21,7 +21,7 @@ else
 fi
 
 ./wield_mjolnir.sh -mex $DATA_DIR/config.ini $DATA_DIR $DATA_DIR/tmp $DATA_DIR/cp:$DATA_DIR/gc
-./wield_mjolnir.sh -mx $DATA_DIR/config.ini $DATA_DIR $DATA_DIR/tmp $DATA_DIR/cp:$DATA_DIR/gc
+# ./wield_mjolnir.sh -mx $DATA_DIR/config.ini $DATA_DIR $DATA_DIR/tmp $DATA_DIR/cp:$DATA_DIR/gc
 
 rm -rf $DATA_DIR/cp/tsv $DATA_DIR/cp/src $DATA_DIR/gc/tsv $DATA_DIR/gc/src
 
