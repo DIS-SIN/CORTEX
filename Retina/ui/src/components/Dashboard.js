@@ -18,9 +18,19 @@ export default class DashBoard extends React.Component{
     this.state = {
       survey_id: "test_sur"
     };
+    this.updateSurveyId = this.updateSurveyId.bind(this);
   }
 
-  
+  componentDidMount() {
+    this.updateSurveyId();
+    setInterval(this.updateSurveyId, 5000);
+  }
+
+  updateSurveyId(){
+    this.setState({
+      survey_id: this.state.survey_id
+    });
+  }  
 
   getSurveyId = () => {
       return this.state.survey_id.length > 0
