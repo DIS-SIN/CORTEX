@@ -136,9 +136,9 @@ WITH r, c, cq, q, CASE WHEN q.stats IS NULL THEN apoc.map.fromPairs([]) ELSE apo
             MERGE (a)-[:ANSWER_OF]->(q)
               // Add the new question stats to the map, then set the stats for the question
               // Increment the answer counter + 1 (or set to 1 if first time)
-              SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, answer, apoc.map.get(map, answer, 0) + 1)),
-                  q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
+              SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, answer, apoc.map.get(map, answer, 0) + 1))
       )
+      SET q.answer_total = CASE WHEN q.answer_total IS NULL THEN 1 ELSE q.answer_total + 1 END
     )
   )
 
