@@ -1,73 +1,42 @@
 import React from 'react';
 import HTMLComment from './HTMLComment'
-import DashMenu from './DashMenu';
-import TagList from "./TagList";
-import Registration from "./Registration";
-import Daily from "./Daily";
-import Department from "./Overview/DepartmentalView";
-import ClassificationView from "./Overview/Section 1/ClassificationView";
-import Response from "./Response";
 import { Query } from "react-apollo";
 import gql from "graphql-tag";
-import { faReply, faGraduationCap, faTable, faRegistered} from '@fortawesome/free-solid-svg-icons';
-import { TextField } from '@material-ui/core';
+import { TextField, Card, CardContent, Typography, CardActions, Button, Grid } from '@material-ui/core';
 import DashBreadcrumbs from './DashBreadcrumbs';
-import Section1 from './Overview/Section 1/Section';
-import DepartmentalView from './Overview/DepartmentalView';
+import ChoiceView from './ChoiceView';
+import ClassifiedView from './ClassifiedView';
+import FreeText from './FreeText';
+
 
 export default class DashBoard extends React.Component{
 
+  
   constructor(props) {
     super(props);
 
     this.state = {
-      from: "2018-01-01",
-      to: "2019-01-01",
-      first: 10
+      survey_id: "test_sur"
     };
   }
 
-  getFrom = () => {
-      return this.state.from.length > 0
-          ? { year_contains: this.state.from }
+  
+
+  getSurveyId = () => {
+      return this.state.survey_id.length > 0
+          ? { survey_id_contains: this.state.survey_id }
           : {};
   };
 
-  handleFromChange = from => event => {
-      const val = event.target.value;
-      this.setState({
-        [from]: val
-      });
-  };
-
-  getTo = () => {
-      return this.state.to.length > 0
-          ? { year_contains: this.state.to }
-          : {};
-  };
-
-  handleFromChange = to => event => {
-      const val = event.target.value;
-      this.setState({
-        [to]: val
-      });
-  };
-
-  getFirst = () => {
-      return this.state.first.length > 0
-          ? { first_contains: this.state.first }
-          : {};
-  };
-
-  handleFirstChange = first => event => {
+  handleSurveyIdChange = survey_id => event => {
       const val = event.target.value;
       if(val){ 
           this.setState({
-              [first]: parseInt(val)
+              [survey_id]: val
           });
       }else{
           this.setState({
-              [first]: 10
+              [survey_id]: "test_sur"
           });
       }
   };
@@ -76,184 +45,197 @@ export default class DashBoard extends React.Component{
     return (
       <Query
         query={gql`query offeringsRangeQuery(
-                $first: Int
-                $from: String
-                $to: String
+                $sur_id: String
             ){
-              all_offs_data(from:$from, to:$to, first:$first){
-                start_date,
-                end_date,
-                uid,
-                week,
-                month,
-                status,
-                registered_for{
-                date,
-                uid,
-                no_show,
-                status,
-                learners{
-                  classifications{
-                    code
-                  },
-                  departments{
-                    code,
-                    name
-                  }
-                }
-                },
-                surveyed_for{
-                date,
-                uid,
-                classification,
-                department
-                },
-                instructors{
-                  name
-                },
-                courses{
-                  code,
-                  title
-                }
+            all_survey_questions(sur_id:$sur_id){
+              uid,
+              answer_total,
+              classified_as,
+              question,
+              stats,
+              options,
+              type
             }
-        }
+          }
         `}
         variables={{
-            from: this.state.from,
-            to: this.state.to,
-            first: this.state.first
+            sur_id: this.state.survey_id
         }}
         >
           {({ loading, error, data }) => {
             if (loading) return <p class="d-flex justify-content-center mt-5">Loading...</p>;
-            if (error) return <p class="d-flex justify-content-center mt-5">Error</p>;
 
-            var total_offerings = data.all_offs_data ? data.all_offs_data.length : 0;
-            var total_registrations = 0;
-            var total_responses = 0;
-
+            if (error) return <p class="d-flex justify-content-center mt-5">Error</p>; 
             
-            var classificationData = [];
-            var departmentalData = [];
-            var instructorData = [];
-
-            var registrations_per_course = [];
-
-            for(let offering of data.all_offs_data){
-                let course = registrations_per_course.find(c => c.code === offering.courses.code);
-                
-                if(!course){
-                    let course_responses = offering.surveyed_for.length;
-                    let course_registrations = offering.registered_for.length;
-                    registrations_per_course.push({code: offering.courses.code, name: offering.courses.title, responses: course_responses, registrations: course_registrations, median: (course_responses + course_registrations) / 2});
-                }else{
-                  registrations_per_course[registrations_per_course.indexOf(course)].responses += offering.surveyed_for.length;
-                  registrations_per_course[registrations_per_course.indexOf(course)].registrations += offering.registered_for.length;
-                }
-                
-                total_responses += offering.surveyed_for.length;
-                total_registrations += offering.registered_for.length;
-
-                for(let inst of offering.instructors){
-                  let instructor = instructorData.find(i => i.name === inst.name);
-
-                  if(!instructor){
-                    instructorData.push({name: inst.name, registrations: offering.registered_for.length, offerings: 1, courses: 1});
-                  }else{
-                    let index = instructorData.indexOf(instructor);
-                    instructorData[index].registrations += offering.registered_for.length;
-                    instructorData[index].offerings += offering.registered_for.length;
-                    instructorData[index].registrations += offering.registered_for.length;
-                  }
-                }
+            let total_answers = 0;
+            let questionsData = [];
             
+            for(let q of data.all_survey_questions){
 
-                for(let reg of offering.registered_for){
-                    let classification = classificationData.find(c => c.name === reg.learners[0].classifications[0].code);
-                    let department = departmentalData.find(d => d.code === reg.learners[0].departments[0].code);                    
-                    
-                  if(!classification){
-                    classificationData.push({name: reg.learners[0].classifications[0].code, registrations: 1});
-                  }else{
-                    let index = classificationData.indexOf(classification);
-                    classificationData[index].registrations++;
-                  }
+              if(q.answer_total)
+                total_answers++;
 
-                    if(!department){
-                        departmentalData.push({code: reg.learners[0].departments[0].code, registrations: 1, name: reg.learners[0].departments[0].name});
-                    }else{
-                        let index = departmentalData.indexOf(department);
-                        departmentalData[index].registrations++;
-                    }
-                }
+              let json_stats = JSON.parse(q.stats)
+              let q_stats = []
+
+              for(let i in json_stats)
+                q_stats.push({name:i, value:json_stats[i]});
+
+              questionsData.push({uid: q.uid, answer_total: q.answer_total, question: q.question[0], type: q.type, classified_as: q.classified_as, stats: q_stats});
             }
-
-            console.log(classificationData, departmentalData);
           
-          
-          return (
-            <div id="wrapper">
-              <HTMLComment text="Menu" />
-              <DashMenu />
+            return (
+              <div id="wrapper">
+                <HTMLComment text="Menu" />
 
-              <div id="content-wrapper" class="ml-3">
-                  <div class="row">
-                    <DashBreadcrumbs className="col-lg-6"/>
-                    <p class="col-lg-6">
-                      <TextField
-                          id="date"
-                          label="From"
-                          type="date"
-                          value={this.state.from}
-                          onChange={this.handleFromChange("from")}
-                          defaultValue="2015-01-01"
-                          className="flex wrap text-white"
-                          InputLabelProps={{
-                          shrink: true,
-                          }}
-                      />  
-                      <TextField
-                          id="date"
-                          label="To"
-                          type="date"
-                          value={this.state.to}
-                          onChange={this.handleFromChange("to")}
-                          defaultValue="2019-08-09"
-                          className="flex wrap text-white ml-1"
-                          InputLabelProps={{
-                          shrink: true,
-                          }}
-                      /> 
-                      <TextField
-                          id="date"
-                          label="Size"
-                          type="number"
-                          value={this.state.first}
-                          onChange={this.handleFirstChange("first")}
-                          defaultValue="10"
-                          className="flex wrap text-white ml-1"
-                          InputLabelProps={{
-                          shrink: true,
-                          }}
-                      />
-                    </p>
-                  </div>
-                  
-                  <Section1 classificationData={classificationData} />
-
-                  <div class="card col-lg-12">
-                    <div class="card-header bg-light">
-                        <i class="fas fa-chart-area"></i>
-                        Departmental data</div>
-                    <div class="card-body">
-                      <DepartmentalView data={departmentalData}/>
+                <div id="content-wrapper" class="ml-3 mr-3">
+                    <div class="row">
+                      <DashBreadcrumbs className="col-lg-9"/>
+                      <p class="col-lg-3"> 
+                        <TextField
+                            id="date"
+                            label="Survey id"
+                            type="text"
+                            value={this.state.survey_id}
+                            onChange={this.handleSurveyIdChange("survey_id")}
+                            className="flex wrap text-white ml-1"
+                            InputLabelProps={{
+                            shrink: true,
+                            }}
+                        />
+                      </p>
                     </div>
-                    <div class="card-footer small text-muted">Updated yesterday at 11:59 PM</div>
-                  </div>
 
+                    <div class="row">
+                      <div class="col-xl-6 col-sm-6 mb-3">
+                        <div class="card text-white bg-primary o-hidden h-100">
+                          <div class="card-body">
+                            <div class="card-body-icon">
+                              <i class="fas fa-fw fa-comments"></i>
+                            </div>
+                            <div class="mr-5">{data.all_survey_questions.length} Questions</div>
+                          </div>
+                          <a class="card-footer text-white clearfix small z-1" href="#">
+                            <span class="float-left">View Details</span>
+                            <span class="float-right">
+                              <i class="fas fa-angle-right"></i>
+                            </span>
+                          </a>
+                        </div>
+                      </div>
+
+                      <div class="col-xl-6 col-sm-6 mb-3">
+                        <div class="card text-white bg-success o-hidden h-100">
+                          <div class="card-body">
+                            <div class="card-body-icon">
+                              <i class="fas fa-fw fa-comments"></i>
+                            </div>
+                            <div class="mr-5">{total_answers} Answers</div>
+                          </div>
+                          <a class="card-footer text-white clearfix small z-1" href="#">
+                            <span class="float-left">View Details</span>
+                            <span class="float-right">
+                              <i class="fas fa-angle-right"></i>
+                            </span>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                    <span class="mb-3"></span>
+
+                    <p class="lead">Single / Multi choice</p>
+
+                    <Grid container spacing={3}>
+                      {questionsData.map(n => {
+                        if(n.type === "SINGLE_CHOICE" || n.type === "MULTI_CHOICE"){
+                          return (
+                            <Grid item xs={3}>
+                              <Card key={n.uid}>
+                                <CardContent>
+                                  <Typography variant="h5" component="h2">
+                                    {n.question}
+                                  </Typography>
+                                  <Typography color="textSecondary">
+                                    {n.type}
+                                  </Typography>
+                                  <Typography variant="body2" component="p">
+                                    <ChoiceView data={n.stats} />
+                                  </Typography>
+                                </CardContent>
+                                <CardActions>
+                                  <Button size="small">View details</Button>
+                                </CardActions>
+                              </Card>
+                            </Grid>
+                          );
+                        }
+                      })}
+                    </Grid>
+
+                    <p class="lead mt-3">Free text</p>
+
+                    <Grid container spacing={5}>
+                      {questionsData.map(n => {
+                        if(n.type === "FREE_TEXT"){
+                          return (
+                            <Grid item xs={3}>
+                              <Card key={n.uid}>
+                                <CardContent>
+                                  <Typography variant="h5" component="h2">
+                                    {n.question}
+                                  </Typography>
+                                  <Typography color="textSecondary">
+                                    {n.type}
+                                  </Typography>
+
+                                  <Typography variant="body2" component="p">
+                                    <FreeText data={n.stats} />
+                                  </Typography>
+                                </CardContent>
+                                <CardActions>
+                                  <Button size="small" color="textPrimary">View details</Button>
+                                </CardActions>
+                              </Card>
+                            </Grid>
+                          );
+                        }
+                      })}
+                    </Grid>
+
+                    <p class="lead mt-3">Classified</p>
+
+                    <Grid container spacing={3} mt={3}>
+                      {questionsData.map(n => {
+                        if(n.type === "CLASSIFIED"){
+                          return (
+                            <Grid item xs={4}>
+                              <Card key={n.uid}>
+                                <CardContent>
+                                  <Typography variant="h5" component="h2">
+                                    {n.question}
+                                  </Typography>
+                                  <Typography color="textSecondary">
+                                    {n.type}
+                                  </Typography>
+
+                                  <Typography variant="body2" component="p">
+                                    <ClassifiedView data={n.stats} />
+                                  </Typography>
+                                </CardContent>
+                                <CardActions>
+                                  <Button size="small" color="textPrimary">View details</Button>
+                                </CardActions>
+                              </Card>
+                            </Grid>
+                          );
+                        }
+                      })}
+                    </Grid>
+
+                  </div>
                 </div>
-              </div>
-          )}}
+            )}}
       </Query>
     );
   }
