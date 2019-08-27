@@ -18,6 +18,8 @@ services:
     container_name: yggdrasil_zookeeper
     ports:
       - "2181:2181"
+    networks:
+      - mimir
     environment:
       - ZOOKEEPER_CLIENT_PORT=2181
       - ZOOKEEPER_TICK_TIME=2000
@@ -25,29 +27,84 @@ services:
   ####################
   # kafka brokers
   #
-  yggdrasil_broker:
+  yggdrasil_broker_1:
     image: confluentinc/cp-enterprise-kafka
-    hostname: yggdrasil_broker
-    container_name: yggdrasil_broker
+    hostname: yggdrasil_broker_1
+    container_name: yggdrasil_broker_1
     ports:
+      - "29092:9092"
       - "9092:9092"
-    expose:
-      - "9093"
     depends_on:
       - yggdrasil_zookeeper
+    networks:
+      - mimir
     environment:
       - KAFKA_BROKER_ID=1
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,OUTSIDE:PLAINTEXT
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://yggdrasil_broker:9093,OUTSIDE://${YGGDRASIL_HOST}:9092
-      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://yggdrasil_broker_1:19092,LOCALHOST://localhost:29092,OUTSIDE://${PUBLIC_IP}:9092
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:19092,LOCALHOST://localhost:29092,OUTSIDE://0.0.0.0:9092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,LOCALHOST:PLAINTEXT,OUTSIDE:PLAINTEXT
       - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
-      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=3
       - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
       - KAFKA_ZOOKEEPER_CONNECT=yggdrasil_zookeeper:2181
       - KAFKA_METRIC_REPORTERS=io.confluent.metrics.reporter.ConfluentMetricsReporter
-      - CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS=yggdrasil_broker:9093
+      - CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS=yggdrasil_broker_1:19092,yggdrasil_broker_2:19093,yggdrasil_broker_3:19094
       - CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT=yggdrasil_zookeeper:2181
-      - CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS=1
+      - CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS=3
+      - CONFLUENT_METRICS_ENABLE=true
+      - CONFLUENT_SUPPORT_CUSTOMER_ID=anonymous
+
+  yggdrasil_broker_2:
+    image: confluentinc/cp-enterprise-kafka
+    hostname: yggdrasil_broker_2
+    container_name: yggdrasil_broker_2
+    ports:
+      - "29093:9093"
+      - "9093:9093"
+    depends_on:
+      - yggdrasil_zookeeper
+    networks:
+      - mimir
+    environment:
+      - KAFKA_BROKER_ID=2
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://yggdrasil_broker_2:19093,LOCALHOST://localhost:29093,OUTSIDE://${PUBLIC_IP}:9093
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:19093,LOCALHOST://localhost:29093,OUTSIDE://0.0.0.0:9093
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,LOCALHOST:PLAINTEXT,OUTSIDE:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+      - KAFKA_ZOOKEEPER_CONNECT=yggdrasil_zookeeper:2181
+      - KAFKA_METRIC_REPORTERS=io.confluent.metrics.reporter.ConfluentMetricsReporter
+      - CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS=yggdrasil_broker_1:19092,yggdrasil_broker_2:19093,yggdrasil_broker_3:19094
+      - CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT=yggdrasil_zookeeper:2181
+      - CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS=3
+      - CONFLUENT_METRICS_ENABLE=true
+      - CONFLUENT_SUPPORT_CUSTOMER_ID=anonymous
+
+  yggdrasil_broker_3:
+    image: confluentinc/cp-enterprise-kafka
+    hostname: yggdrasil_broker_3
+    container_name: yggdrasil_broker_3
+    ports:
+      - "29094:9094"
+      - "9094:9094"
+    depends_on:
+      - yggdrasil_zookeeper
+    networks:
+      - mimir
+    environment:
+      - KAFKA_BROKER_ID=3
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://yggdrasil_broker_3:19094,LOCALHOST://localhost:29094,OUTSIDE://${PUBLIC_IP}:9094
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:19094,LOCALHOST://localhost:29094,OUTSIDE://0.0.0.0:9094
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,LOCALHOST:PLAINTEXT,OUTSIDE:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+      - KAFKA_ZOOKEEPER_CONNECT=yggdrasil_zookeeper:2181
+      - KAFKA_METRIC_REPORTERS=io.confluent.metrics.reporter.ConfluentMetricsReporter
+      - CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS=yggdrasil_broker_1:19092,yggdrasil_broker_2:19093,yggdrasil_broker_3:19094
+      - CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT=yggdrasil_zookeeper:2181
+      - CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS=3
       - CONFLUENT_METRICS_ENABLE=true
       - CONFLUENT_SUPPORT_CUSTOMER_ID=anonymous
 
@@ -62,9 +119,13 @@ services:
       - "8081:8081"
     depends_on:
       - yggdrasil_zookeeper
-      - yggdrasil_broker
+      - yggdrasil_broker_1
+      - yggdrasil_broker_2
+      - yggdrasil_broker_3
+    networks:
+      - mimir
     environment:
-      - SCHEMA_REGISTRY_HOST_NAME=${YGGDRASIL_HOST}
+      - SCHEMA_REGISTRY_HOST_NAME=${PUBLIC_IP}
       - SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL=yggdrasil_zookeeper:2181
 
   ####################
@@ -74,13 +135,18 @@ services:
     image: confluentinc/cp-kafka-rest
     hostname: yggdrasil_rest_proxy
     container_name: yggdrasil_rest_proxy
-    depends_on:
-      - yggdrasil_zookeeper
-      - yggdrasil_broker
-      - yggdrasil_schema_registry
     ports:
       - "8082:8082"
+    depends_on:
+      - yggdrasil_zookeeper
+      - yggdrasil_broker_1
+      - yggdrasil_broker_2
+      - yggdrasil_broker_3
+      - yggdrasil_schema_registry
+    networks:
+      - mimir
     environment:
+      - KAFKA_REST_BOOTSTRAP_SERVERS=yggdrasil_broker_1:19092,yggdrasil_broker_2:19093,yggdrasil_broker_3:19094
       - KAFKA_REST_HOST_NAME=yggdrasil_rest_proxy
       - KAFKA_REST_ZOOKEEPER_CONNECT=yggdrasil_zookeeper:2181
       - KAFKA_REST_LISTENERS=http://0.0.0.0:8082
@@ -97,22 +163,26 @@ services:
       - "8083:8083"
     depends_on:
       - yggdrasil_zookeeper
-      - yggdrasil_broker
+      - yggdrasil_broker_1
+      - yggdrasil_broker_2
+      - yggdrasil_broker_3
       - yggdrasil_schema_registry
+    networks:
+      - mimir
     volumes:
       - ${YGGDRASIL_CONNECT_PLUGINS:-~/yggdrasil/connect/plugins}:/tmp/connect-plugins
     environment:
-      - CONNECT_BOOTSTRAP_SERVERS=yggdrasil_broker:9093
+      - CONNECT_BOOTSTRAP_SERVERS=yggdrasil_broker_1:19092,yggdrasil_broker_2:19093,yggdrasil_broker_3:19094
       - CONNECT_REST_ADVERTISED_HOST_NAME=yggdrasil_connect
       - CONNECT_REST_PORT=8083
       - CONNECT_GROUP_ID=compose-connect-group
       - CONNECT_CONFIG_STORAGE_TOPIC=docker-connect-configs
-      - CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=1
+      - CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=3
       - CONNECT_OFFSET_FLUSH_INTERVAL_MS=10000
       - CONNECT_OFFSET_STORAGE_TOPIC=docker-connect-offsets
-      - CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=1
+      - CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=3
       - CONNECT_STATUS_STORAGE_TOPIC=docker-connect-status
-      - CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=1
+      - CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=3
       - CONNECT_KEY_CONVERTER=io.confluent.connect.avro.AvroConverter
       - CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL=http://yggdrasil_schema_registry:8081
       - CONNECT_VALUE_CONVERTER=io.confluent.connect.avro.AvroConverter
@@ -140,17 +210,21 @@ services:
       - "9021:9021"
     depends_on:
       - yggdrasil_zookeeper
-      - yggdrasil_broker
+      - yggdrasil_broker_1
+      - yggdrasil_broker_2
+      - yggdrasil_broker_3
       - yggdrasil_schema_registry
       - yggdrasil_connect
+    networks:
+      - mimir
     environment:
-      - CONTROL_CENTER_BOOTSTRAP_SERVERS=yggdrasil_broker:9093
+      - CONTROL_CENTER_BOOTSTRAP_SERVERS=yggdrasil_broker_1:19092,yggdrasil_broker_2:19093,yggdrasil_broker_3:19094
       - CONTROL_CENTER_ZOOKEEPER_CONNECT=yggdrasil_zookeeper:2181
       - CONTROL_CENTER_CONNECT_CLUSTER=yggdrasil_connect:8083
-      - CONTROL_CENTER_REPLICATION_FACTOR=1
-      - CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS=1
-      - CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS=1
-      - CONFLUENT_METRICS_TOPIC_REPLICATION=1
+      - CONTROL_CENTER_REPLICATION_FACTOR=3
+      - CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS=3
+      - CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS=3
+      - CONFLUENT_METRICS_TOPIC_REPLICATION=3
       - PORT=9021
 
   ####################
@@ -170,9 +244,13 @@ services:
       - 7687:7687
     depends_on:
       - yggdrasil_zookeeper
-      - yggdrasil_broker
+      - yggdrasil_broker_1
+      - yggdrasil_broker_2
+      - yggdrasil_broker_3
       - yggdrasil_schema_registry
       - yggdrasil_connect
+    networks:
+      - mimir
     volumes:
       - ${NEO4J_GDB_DATA:-~/neo4j/data}:/data
       - ${NEO4J_GDB_IMPT:-~/neo4j/import}:/import
@@ -195,8 +273,8 @@ services:
       - NEO4J_apoc_spatial_geocode_provider=osm
       - NEO4J_apoc_spatial_geocode_osm_throttle=5000
       - NEO4J_dbms_unmanaged__extension__classes=org.neo4j.graphql=/graphql
-      - NEO4J_kafka_zookeeper_connect=${YGGDRASIL_HOST}:2181
-      - NEO4J_kafka_bootstrap_servers=${YGGDRASIL_HOST}:9092
+      - NEO4J_kafka_zookeeper_connect=yggdrasil_zookeeper:2181
+      - NEO4J_kafka_bootstrap_servers=yggdrasil_broker_1:19092,yggdrasil_broker_2:19093,yggdrasil_broker_3:19094
       - NEO4J_streams_procedures_enable=true
       - NEO4J_streams_sink_enabled=true
       - NEO4J_streams_source_enabled=true
@@ -214,3 +292,14 @@ services:
       - 3000:3000
     depends_on:
       - jotunheimr
+    networks:
+      - mimir
+
+################################################################################
+#
+# networks
+#
+################################################################################
+networks:
+  mimir:
+    name: mimir

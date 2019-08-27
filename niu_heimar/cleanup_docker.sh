@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker-compose -f niu_heimar.yml down
+docker-compose down
 docker system prune -f
 docker container rm -f $(docker container ls -aq)
 

@@ -5,35 +5,26 @@ Set of dockers that can be run on any computer for local development, testing, o
 - a `jotunheimr` docker with `APOC, Graph Algorithms, GraphQL, and Streams`
 libraries installed, plus `halin`
 
-## A. Run `yggdrasil`
+## Start `niu_heimar`:
 
-### Start `yggdrasil`:
-- On Linux/Mac OS X:
+    ./start_niu_heimar.sh <neo4j_dir> <public_ip>
 
-      ./start_yggdrasil.sh
+  Use local ip:
 
-- Windows:
+    ./start_niu_heimar.sh ~/neo4j
 
-      ./start_yggdrasil.sh <local_ip>
+  Use `public_ip`:
 
-  for example:
+    ./start_niu_heimar.sh ~/neo4j cortex.da-an.ca
 
-      ./start_yggdrasil.sh 10.0.1.119
+## Test `niu_heimar`:
 
-### Test from another computer (Ubuntu 18.04, Windows 10, Mac OS X)
+From another computer (Ubuntu 18.04, Windows 10, Mac OS X):
 
-`remote_ip` is where the `yggdrasil` instance running
+`public_ip` is where the `niu_heimar` running
 
-    ./test_yggdrasil.sh <remote_ip>
+    ./test_yggdrasil.sh <public_ip>
 
 for example:
 
     ./test_yggdrasil.sh 10.0.1.119
-
-
-## B. Run `jotunheimr`
-
-  `neo4j_dir` is where the database storage is
-  `yggdrasil_host` is where the `yggdrasil` instance running
-
-    ./start_jotunheimr.sh <neo4j_dir> <yggdrasil_host>
