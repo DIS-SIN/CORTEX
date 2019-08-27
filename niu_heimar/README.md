@@ -17,6 +17,24 @@ libraries installed, plus `halin`
 
     ./start_niu_heimar.sh ~/neo4j cortex.da-an.ca
 
+  Open ports for access on the host where you are running `niu_heimar` (as well as on the cloud host if you use any)
+
+```
+Make sure following ports are accesible from outside this host
+kafka
+  2181 (zookeeper)
+  8081 (schema_registry)
+  8082 (rest_proxy)
+  8083 (connect)
+  9021 (control_center)
+  9092, 9003, 9004 (brokers)
+neo4j
+  3000 (halin)
+  7473 (https)
+  7474 (http)
+  7687 (bolt)
+```
+
 ## Test `niu_heimar`:
 
 From another computer (Ubuntu 18.04, Windows 10, Mac OS X):
