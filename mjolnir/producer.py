@@ -25,11 +25,12 @@ def produce_messages(input_file, prefixed_topic, producer):
 if __name__ == "__main__":
 
     if len(sys.argv) < 3:
-        print("Usage: python producer.py <config> <tsv_dir>")
+        print("Usage: python producer.py <config> <tsv_dir> <remote>")
         exit(1)
 
     handler = ConfigHandler(sys.argv[1])
     tsv_dir = sys.argv[2]
+    remote = len(sys.argv) == 4
 
     config = handler.get_eval_option('yggdrasil', 'conf')
     prefix = handler.get_config_option('info', 'prefix')
@@ -47,21 +48,35 @@ if __name__ == "__main__":
         default_value_schema=avro_schema
     )
 
-    entity_topics = [
-        k for k, _ in handler.get_eval_option('jotunheimr', 'topics').items()
-        if '_TO_' not in k
-    ]
+    if remote:
+        schema_topic = '%s_constraints' % prefix
+        avro_producer = AvroProducer(
+            {
+                'bootstrap.servers': broker,
+                'schema.registry.url': schema_registry
+            },
+            default_value_schema=avro_schema
+        )
 
-    relation_topics = [
-        k for k, _ in handler.get_eval_option('jotunheimr', 'topics').items()
-        if '_TO_' in k
-    ]
+        avro_producer.produce(topic='gc_constraints', value={"pc_code": "XYZ"})
+        avro_producer.flush()
 
-    for topic in entity_topics + relation_topics:
-        file_name = '%s/%s.tsv' % (tsv_dir, topic)
-        with open(file_name, mode='rt', encoding='utf-8') as text_file:
-            prefixed_topic = "%s_%s" % (prefix, topic)
-            print('\nProcess [%s] to [%s] topic ' % (file_name, prefixed_topic))
-            produce_messages(text_file, prefixed_topic, avro_producer)
+    # entity_topics = [
+    #     k for k, _ in handler.get_eval_option('jotunheimr', 'topics').items()
+    #     if '_TO_' not in k
+    # ]
+    #
+    # relation_topics = [
+    #     k for k, _ in handler.get_eval_option('jotunheimr', 'topics').items()
+    #     if '_TO_' in k
+    # ]
+    #
+    #
+    # for topic in entity_topics + relation_topics:
+    #     file_name = '%s/%s.tsv' % (tsv_dir, topic)
+    #     with open(file_name, mode='rt', encoding='utf-8') as text_file:
+    #         prefixed_topic = "%s_%s" % (prefix, topic)
+    #         print('\nProcess [%s] to [%s] topic ' % (file_name, prefixed_topic))
+    #         produce_messages(text_file, prefixed_topic, avro_producer)
 
     print_profile_statistics()

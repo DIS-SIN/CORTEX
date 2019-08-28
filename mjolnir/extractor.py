@@ -24,6 +24,8 @@ SINK_CONFIG = """
   }
 }
 """
+APOC_SCHEMA_ASSERT = "CALL apoc.schema.assert({%s},{%s});"
+
 
 def load_lines(file_name):
     with open(file_name, mode='rt', encoding='utf-8') as text_file:
@@ -57,36 +59,56 @@ def write_rows(rows, file_name, row_info_list):
 def create_contraints(file_name, cons_conf):
     with open(file_name, mode='wt', encoding='utf-8') as text_file:
         count = 0
+        const_str, index_str = [], []
         for name, info in cons_conf.items():
-            cons = []
+            cons, ind_l, con_l = [], set(), set()
             if 'p' in info:
                 cons.append(P_CONST % name)
+                ind_l.add('point')
             if 'u' in info:
                 cons.append(U_CONST % (name, info['u']))
+                con_l.add(info['u'])
             if 'i' in info:
                 for entity_prop in info['i']:
                     cons.append(I_CONST % (name, entity_prop))
+                    ind_l.add(entity_prop)
             if 'c' in info:
                 cons.append(I_CONST % (name, ','.join(info['c'])))
+                ind_l.update(set(info['c']))
             if cons:
                 for con in cons:
                     text_file.write('%s;\n' % con)
                     count += 1
+            if con_l:
+                const_str.append('%s:[%s]' % (name, ','.join(["'%s'" % c for c in sorted(con_l)])))
+            if ind_l:
+                index_str.append('%s:[%s]' % (name, ','.join(["'%s'" % c for c in sorted(ind_l)])))
         text_file.write('CALL db.constraints();\n')
         text_file.write('CALL db.indexes();\n')
         text_file.write('CALL db.awaitIndexes();\n')
         print('%s constraints and indexes created.' % count)
 
+        schema_statement = APOC_SCHEMA_ASSERT % (
+            ','.join(index_str), ','.join(const_str)
+        )
+        return schema_statement
 
-def create_sink_config(file_name, host_conf, topics_conf, prefix):
+
+def create_sink_config(file_name, host_conf, topics_conf, prefix, statement):
     with open(file_name, mode='wt', encoding='utf-8') as text_file:
-        topic_list = ','.join([
-            '%s_%s' % (prefix, k) for k, _ in topics_conf.items()
-        ])
-        topics = ',\n    '.join([
-            '"%s.%s_%s": "%s"' % (TOPIC_PREFIX, prefix, k, v)
-            for k, v in topics_conf.items()
-        ])
+        topic_list = ','.join(
+            ['%s_%s' % (prefix, k) for k, _ in topics_conf.items()] +
+            ['%s_constraints' % prefix]
+        )
+        topics = ',\n    '.join(
+            [
+                '"%s.%s_%s": "%s"' % (TOPIC_PREFIX, prefix, k, v)
+                for k, v in topics_conf.items()
+            ] +
+            [
+                '"%s.%s_constraints": "%s"' % (TOPIC_PREFIX, prefix, statement)
+            ]
+        )
         text_file.write(SINK_CONFIG % (
             topic_list,
             host_conf['host'], host_conf['username'], host_conf['password'],
@@ -129,9 +151,9 @@ if __name__ == '__main__':
 
     con_conf = config_handler.get_eval_option('jotunheimr', 'constraints')
     file_name = '%s/schema_for_jotunheimr.cql' % target_dir
-    create_contraints(file_name, con_conf, )
+    schema_statement = create_contraints(file_name, con_conf, )
 
     crd_conf = config_handler.get_eval_option('jotunheimr', 'credentials')
     tpc_conf = config_handler.get_eval_option('jotunheimr', 'topics')
     file_name = '%s/jotunheimr_sink.json' % target_dir
-    create_sink_config(file_name, crd_conf, tpc_conf, prefix)
+    create_sink_config(file_name, crd_conf, tpc_conf, prefix, schema_statement)

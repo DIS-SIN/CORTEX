@@ -10,7 +10,8 @@ if [ $# -lt 4 ]; then
   echo "  -x: copy any *.tsv file from tsv sub-irectory of extra directories into target directory"
   echo "  -s: run schema file schema_for_jotunheimr.cql if jotunheimr is a local container"
   echo "  -c: configure sink connector"
-  echo "  -i: import data by producing messages to yggdrasil"
+  echo "  -i: local import data by producing messages to yggdrasil"
+  echo "  -r: remote import data by producing messages to yggdrasil"
   exit
 fi
 
@@ -60,7 +61,7 @@ if [[ $commands == *"x"* ]]; then
 fi
 
 if [[ $commands == *"s"* ]]; then
-  BOLT_HOST_PORT=`python cfg_option.py $CFG_FILE jotunheimr credentials direct_host`
+  BOLT_HOST_PORT=`python cfg_option.py $CFG_FILE jotunheimr credentials host`
   USER_NAME=`python cfg_option.py $CFG_FILE jotunheimr credentials username`
   PASSWORD=`python cfg_option.py $CFG_FILE jotunheimr credentials password`
   CONTAINER_NAME=`python cfg_option.py $CFG_FILE jotunheimr credentials container_name`
@@ -91,6 +92,12 @@ fi
 if [[ $commands == *"i"* ]]; then
   printf "Producing messages ...\n"
   python producer.py $CFG_FILE $TARGET_DIR
+  printf "Done.\n"
+fi
+
+if [[ $commands == *"r"* ]]; then
+  printf "Producing messages ...\n"
+  python producer.py $CFG_FILE $TARGET_DIR remote
   printf "Done.\n"
 fi
 

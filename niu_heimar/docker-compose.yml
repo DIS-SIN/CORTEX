@@ -125,7 +125,7 @@ services:
     networks:
       - mimir
     environment:
-      - SCHEMA_REGISTRY_HOST_NAME=${PUBLIC_IP}
+      - SCHEMA_REGISTRY_HOST_NAME=yggdrasil_schema_registry
       - SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL=yggdrasil_zookeeper:2181
 
   ####################
