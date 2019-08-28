@@ -43,40 +43,32 @@ if __name__ == "__main__":
     avro_producer = AvroProducer(
         {
             'bootstrap.servers': broker,
-            'schema.registry.url': schema_registry
+            'schema.registry.url': schema_registry,
         },
         default_value_schema=avro_schema
     )
 
-    if remote:
-        schema_topic = '%s_constraints' % prefix
-        avro_producer = AvroProducer(
-            {
-                'bootstrap.servers': broker,
-                'schema.registry.url': schema_registry
-            },
-            default_value_schema=avro_schema
-        )
+    # if remote:
+    #     schema_topic = '%s_constraints' % prefix
+    #     avro_producer.produce(topic=schema_topic, value={"pc_code": "XYZ"})
+    #     avro_producer.flush()
 
-        avro_producer.produce(topic='gc_constraints', value={"pc_code": "XYZ"})
-        avro_producer.flush()
+    entity_topics = [
+        k for k, _ in handler.get_eval_option('jotunheimr', 'topics').items()
+        if '_TO_' not in k
+    ]
 
-    # entity_topics = [
-    #     k for k, _ in handler.get_eval_option('jotunheimr', 'topics').items()
-    #     if '_TO_' not in k
-    # ]
-    #
-    # relation_topics = [
-    #     k for k, _ in handler.get_eval_option('jotunheimr', 'topics').items()
-    #     if '_TO_' in k
-    # ]
-    #
-    #
-    # for topic in entity_topics + relation_topics:
-    #     file_name = '%s/%s.tsv' % (tsv_dir, topic)
-    #     with open(file_name, mode='rt', encoding='utf-8') as text_file:
-    #         prefixed_topic = "%s_%s" % (prefix, topic)
-    #         print('\nProcess [%s] to [%s] topic ' % (file_name, prefixed_topic))
-    #         produce_messages(text_file, prefixed_topic, avro_producer)
+    relation_topics = [
+        k for k, _ in handler.get_eval_option('jotunheimr', 'topics').items()
+        if '_TO_' in k
+    ]
+
+
+    for topic in entity_topics + relation_topics:
+        file_name = '%s/%s.tsv' % (tsv_dir, topic)
+        with open(file_name, mode='rt', encoding='utf-8') as text_file:
+            prefixed_topic = "%s_%s" % (prefix, topic)
+            print('\nProcess [%s] to [%s] topic ' % (file_name, prefixed_topic))
+            produce_messages(text_file, prefixed_topic, avro_producer)
 
     print_profile_statistics()

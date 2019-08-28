@@ -32,25 +32,60 @@ fi
 cp $DATA_DIR/config.template.ini $DATA_DIR/tmp/config.ini
 
 PATTERN=s/JOTUNHEIMR_PUBLIC/jotunheimr:7687/g
-sed -i $PATTERN $DATA_DIR/tmp/config.ini
+case "$(uname -s)" in
+	Darwin)
+		gsed -i $PATTERN $DATA_DIR/tmp/config.ini
+		;;
+	*)
+		sed -i $PATTERN $DATA_DIR/tmp/config.ini
+		;;
+esac
 
 PATTERN=s/JOTUNHEIMR_CONTAINER/jotunheimr/g
-sed -i $PATTERN $DATA_DIR/tmp/config.ini
+case "$(uname -s)" in
+	Darwin)
+		gsed -i $PATTERN $DATA_DIR/tmp/config.ini
+		;;
+	*)
+		sed -i $PATTERN $DATA_DIR/tmp/config.ini
+		;;
+esac
 
 PATTERN=s/YGGDRASIL_BROKER/$PUBLIC_IP:9092/g
-sed -i $PATTERN $DATA_DIR/tmp/config.ini
+case "$(uname -s)" in
+	Darwin)
+		gsed -i $PATTERN $DATA_DIR/tmp/config.ini
+		;;
+	*)
+		sed -i $PATTERN $DATA_DIR/tmp/config.ini
+		;;
+esac
 
 PATTERN=s/YGGDRASIL_SCHEMA_REGISTRY/"http:\/\/$PUBLIC_IP:8081"/g
-sed -i $PATTERN $DATA_DIR/tmp/config.ini
+case "$(uname -s)" in
+	Darwin)
+		gsed -i $PATTERN $DATA_DIR/tmp/config.ini
+		;;
+	*)
+		sed -i $PATTERN $DATA_DIR/tmp/config.ini
+		;;
+esac
 
 PATTERN=s/YGGDRASIL_CONNECT/$PUBLIC_IP:8083/g
-sed -i $PATTERN $DATA_DIR/tmp/config.ini
+case "$(uname -s)" in
+	Darwin)
+		gsed -i $PATTERN $DATA_DIR/tmp/config.ini
+		;;
+	*)
+		sed -i $PATTERN $DATA_DIR/tmp/config.ini
+		;;
+esac
 
 ./wield_mjolnir.sh -e $DATA_DIR/tmp/config.ini $DATA_DIR $DATA_DIR/tmp $DATA_DIR/cp:$DATA_DIR/gc
 
 rm -rf $DATA_DIR/cp/tsv $DATA_DIR/cp/src $DATA_DIR/gc/tsv $DATA_DIR/gc/src
 
-./wield_mjolnir.sh -s $DATA_DIR/tmp/config.ini $DATA_DIR $DATA_DIR/tmp
+# ./wield_mjolnir.sh -s $DATA_DIR/tmp/config.ini $DATA_DIR $DATA_DIR/tmp
 
 sleep 10
 ./wield_mjolnir.sh -c $DATA_DIR/tmp/config.ini $DATA_DIR $DATA_DIR/tmp
