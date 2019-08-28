@@ -3,7 +3,7 @@
 if [ $# -lt 2 ]; then
   echo "Usage: ./run_local_import.sh <dataset_directory> <public_ip>"
   echo "Example:"
-  echo "  ./run_local_import.sh ../datasets"
+  echo "  ./run_local_import.sh ../datasets 10.0.1.119"
 fi
 
 DATA_DIR=$1

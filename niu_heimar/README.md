@@ -5,7 +5,9 @@ Set of dockers that can be run on any computer for local development, testing, o
 - a `jotunheimr` docker with `APOC, Graph Algorithms, GraphQL, and Streams`
 libraries installed, plus `halin`
 
-## Start `niu_heimar`:
+## Deploy `niu_heimar`: both `yggdrasil` and `jotunheimr` on the same host
+
+### Start `niu_heimar`:
 
     ./start_niu_heimar.sh <neo4j_dir> <public_ip>
 
@@ -35,11 +37,70 @@ neo4j
   7687 (bolt)
 ```
 
-## Test `niu_heimar`:
+### Test `niu_heimar`:
 
 From another computer (Ubuntu 18.04, Windows 10, Mac OS X):
 
 `public_ip` is where the `niu_heimar` running
+
+    ./test_yggdrasil.sh <public_ip>
+
+for example:
+
+    ./test_yggdrasil.sh 10.0.1.119
+
+## Deploy `yggdrasil` and `jotunheimr` on different hosts
+
+### Deploy `yggdrasil`:
+
+    ./start_yggdrasil.sh <public_ip>
+
+  Use local ip:
+
+    ./start_yggdrasil.sh
+
+  Use `public_ip`:
+
+    ./start_yggdrasil.sh cortex.da-an.ca
+
+
+```
+Make sure following ports are accesible from outside this host
+kafka
+  2181 (zookeeper)
+  8081 (schema_registry)
+  8082 (rest_proxy)
+  8083 (connect)
+  9021 (control_center)
+  9092, 9003, 9004 (brokers)
+```
+
+### Deploy `jotunheimr`:
+
+    ./start_jotunheimr.sh <neo4j_dir> <public_ip>
+
+  Use local ip:
+
+    ./start_jotunheimr.sh ~/neo4j
+
+  Use `public_ip`:
+
+    ./start_jotunheimr.sh ~/neo4j cortex.da-an.ca
+
+```
+Make sure following ports are accesible from outside this host
+neo4j
+  3000 (halin)
+  7473 (https)
+  7474 (http)
+  7687 (bolt)
+```    
+
+### Test `yggdrasil`:
+
+From another computer (Ubuntu 18.04, Windows 10, Mac OS X):
+
+`public_ip` is where the `yggdrasil` running
 
     ./test_yggdrasil.sh <public_ip>
 
