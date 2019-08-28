@@ -34,7 +34,7 @@ fi
 
 cp $DATA_DIR/config.template.ini $DATA_DIR/tmp/config.ini
 
-PATTERN=s/JOTUNHEIMR_IP/$JOTUNHEIMR_IP:7687/g
+PATTERN=s/JOTUNHEIMR_IP/$JOTUNHEIMR_IP/g
 case "$(uname -s)" in
 	Darwin)
 		gsed -i $PATTERN $DATA_DIR/tmp/config.ini
