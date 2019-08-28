@@ -31,7 +31,7 @@ fi
 
 cp $DATA_DIR/config.template.ini $DATA_DIR/tmp/config.ini
 
-PATTERN=s/JOTUNHEIMR_PUBLIC/jotunheimr:7687/g
+PATTERN=s/JOTUNHEIMR_IP/jotunheimr/g
 case "$(uname -s)" in
 	Darwin)
 		gsed -i $PATTERN $DATA_DIR/tmp/config.ini
@@ -51,7 +51,7 @@ case "$(uname -s)" in
 		;;
 esac
 
-PATTERN=s/YGGDRASIL_BROKER/$PUBLIC_IP:9092/g
+PATTERN=s/YGGDRASIL_BROKER/$PUBLIC_IP:9092,$PUBLIC_IP:9093/g
 case "$(uname -s)" in
 	Darwin)
 		gsed -i $PATTERN $DATA_DIR/tmp/config.ini

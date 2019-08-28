@@ -1,0 +1,86 @@
+version: '3.5'
+
+##############################################################################
+#
+# yggdrasil:
+# - zookeeper, broker, schema_registry, connect, control_center, rest_proxy
+# - all are connected to minir
+#
+##############################################################################
+services:
+
+  ####################
+  # jotunheimr:
+  # - Neo4j + ALGO + APOC + GraphQL + Streams
+  #
+  jotunheimr:
+    build:
+      context: ./jotunheimr
+      dockerfile: Dockerfile
+    image: neo4j-3.5.8:aags
+    hostname: jotunheimr
+    container_name: jotunheimr
+    ports:
+      - 7474:7474
+      - 7473:7473
+      - 7687:7687
+    depends_on:
+      - yggdrasil_zookeeper
+      - yggdrasil_broker_1
+      - yggdrasil_broker_2
+      - yggdrasil_schema_registry
+      - yggdrasil_connect
+    networks:
+      - mimir
+    volumes:
+      - ${NEO4J_GDB_DATA:-~/neo4j/data}:/data
+      - ${NEO4J_GDB_IMPT:-~/neo4j/import}:/import
+      - ${NEO4J_GDB_LOGS:-~/neo4j/logs}:/logs
+    environment:
+      - NEO4J_AUTH=neo4j/##dis@da2019##
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4J_dbms_memory_heap_initial__size=4G
+      - NEO4J_dbms_memory_heap_max__size=4G
+      - NEO4J_dbms_memory_pagecache_size=2G
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,algo.*,graphql.*
+      - NEO4J_dbms_security_allow__csv__import__from__file__urls=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_http_timeout_connect=60000
+      - NEO4J_apoc_http_timeout_read=120000
+      - NEO4J_apoc_jobs_pool_num__threads=4
+      - NEO4J_apoc_jobs_schedule_num__threads=4
+      - NEO4J_apoc_spatial_geocode_provider=osm
+      - NEO4J_apoc_spatial_geocode_osm_throttle=5000
+      - NEO4J_dbms_unmanaged__extension__classes=org.neo4j.graphql=/graphql
+      - NEO4J_kafka_zookeeper_connect=${YGGDRASIL_PUBLIC_IP}:2181
+      - NEO4J_kafka_bootstrap_servers=${YGGDRASIL_PUBLIC_IP}:9092,${YGGDRASIL_PUBLIC_IP}:9093
+      - NEO4J_streams_procedures_enable=true
+      - NEO4J_streams_sink_enabled=true
+      - NEO4J_streams_source_enabled=true
+      # - NEO4J_streams_source_topic_nodes_survey__metrics=Valhalla_Question{uid,type,classified_as,stats,answer_total}
+      # - NEO4J_streams_source_topic_relationships_x_relation=BELONGS_TO{*}
+
+  ####################
+  # halin
+  #
+  halin:
+    image: mdavidallen/halin:latest
+    hostname: halin
+    container_name: halin
+    ports:
+      - 3000:3000
+    depends_on:
+      - jotunheimr
+    networks:
+      - mimir
+
+################################################################################
+#
+# networks
+#
+################################################################################
+networks:
+  mimir:
+    name: mimir

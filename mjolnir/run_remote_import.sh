@@ -34,7 +34,7 @@ fi
 
 cp $DATA_DIR/config.template.ini $DATA_DIR/tmp/config.ini
 
-PATTERN=s/JOTUNHEIMR_PUBLIC/jotunheimr:7687/g
+PATTERN=s/JOTUNHEIMR_IP/$JOTUNHEIMR_IP:7687/g
 case "$(uname -s)" in
 	Darwin)
 		gsed -i $PATTERN $DATA_DIR/tmp/config.ini
@@ -54,7 +54,7 @@ case "$(uname -s)" in
 		;;
 esac
 
-PATTERN=s/YGGDRASIL_BROKER/$YGGDRASIL_BROKER_IP:9092,$YGGDRASIL_BROKER_IP:9093,$YGGDRASIL_BROKER_IP:9094/g
+PATTERN=s/YGGDRASIL_BROKER/$YGGDRASIL_BROKER_IP:9092,$YGGDRASIL_BROKER_IP:9093/g
 case "$(uname -s)" in
 	Darwin)
 		gsed -i $PATTERN $DATA_DIR/tmp/config.ini
@@ -88,7 +88,7 @@ esac
 
 rm -rf $DATA_DIR/cp/tsv $DATA_DIR/cp/src $DATA_DIR/gc/tsv $DATA_DIR/gc/src
 
-./wield_mjolnir.sh -s $DATA_DIR/tmp/config.ini $DATA_DIR $DATA_DIR/tmp
+# ./wield_mjolnir.sh -s $DATA_DIR/tmp/config.ini $DATA_DIR $DATA_DIR/tmp
 
 sleep 10
 ./wield_mjolnir.sh -c $DATA_DIR/tmp/config.ini $DATA_DIR $DATA_DIR/tmp

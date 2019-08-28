@@ -42,7 +42,7 @@ echo "yggdrasil_broker(s) will listen on $PUBLIC_IP."
 
 ./install_kafkacat.sh
 
-docker-compose up -d --build
+docker-compose -f niu_heimar.yml up -d --build
 
 echo "Make sure following ports are accesible from outside this host:"
 echo "kafka "
