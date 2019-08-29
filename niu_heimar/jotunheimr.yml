@@ -24,12 +24,6 @@ services:
       - 7474:7474
       - 7473:7473
       - 7687:7687
-    depends_on:
-      - yggdrasil_zookeeper
-      - yggdrasil_broker_1
-      - yggdrasil_broker_2
-      - yggdrasil_schema_registry
-      - yggdrasil_connect
     networks:
       - mimir
     volumes:
