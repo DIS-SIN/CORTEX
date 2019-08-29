@@ -31,7 +31,7 @@ def before_all(context):
     context.broker = context.config.userdata.get("yggdrasil_broker")
     context.schema_registry = context.config.userdata.get("yggdrasil_schema_registry")
     context.rest_proxy = context.config.userdata.get("yggdrasil_rest_proxy")
-    context.jotunheimr = jotunheimrcontext.config.userdata.get("jotunheimr")
+    context.jotunheimr = context.config.userdata.get("jotunheimr")
 
     context.schema_registry_url = "http://%s" % context.schema_registry
 

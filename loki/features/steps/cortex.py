@@ -13,12 +13,12 @@ from time import sleep
 #     Then "player" receives "test_sur" in "evalese" via "survey_evalese" from Yggdrasil
 
 @given('"{sender_name}" creates "{survey_uid}" in "{format}" format')
-def step_impl(context, sender, survey_uid, format):
-    file_name = '%s_%s.json' % (survey_uid, format)
+def step_impl(context, sender_name, survey_uid, format):
+    file_name = 'data/%s_%s.json' % (survey_uid, format)
     file_content = get_content(file_name)
     file_md5 = get_md5(file_content)
 
-    if getattr(context, sender_name) is None:
+    if not hasattr(context, sender_name):
         setattr(context, sender_name, dict())
     sender = getattr(context, sender_name)
     sender[survey_uid] = dict({
@@ -27,7 +27,7 @@ def step_impl(context, sender, survey_uid, format):
     })
 
 
-@when('"{sender_name}" sends "{survey_uid}" in "{format}" via "survey_evalese" to Yggdrasil')
+@when('"{sender_name}" sends "{survey_uid}" in "{format}" via "{topic}" to Yggdrasil')
 def step_impl(context, sender_name, survey_uid, format, topic):
     sender = getattr(context, sender_name)
     content = sender[survey_uid][format]
@@ -35,13 +35,12 @@ def step_impl(context, sender_name, survey_uid, format, topic):
     assert r.status_code == 200
 
 
-@then('"{receiver_name}" receives "{survey_uid}" in "{format}" via "survey_evalese" from Yggdrasil')
-def step_impl(context, receiver, survey_uid, format, topic):
-    if getattr(context, receiver) is None:
-        setattr(context, receiver, dict())
+@then('"{receiver_name}" receives "{survey_uid}" in "{format}" via "{topic}" from Yggdrasil')
+def step_impl(context, receiver_name, survey_uid, format, topic):
+    if not hasattr(context, receiver_name):
+        setattr(context, receiver_name, dict())
     receiver = getattr(context, receiver_name)
     r = consume_message_via_proxy(context, topic)
-    assert r.status_code == 200
 
 #
 ################################################################################

@@ -1,0 +1,1056 @@
+{
+    "uid": "TEST_SUR",
+    "title": {
+        "en": "Evalhalla",
+        "fr": "Evalhalla"
+    },
+    "description": {
+        "en": "Thank you for taking part in this survey. The results of this survey will be used to demonstrate how Evalhalla can be used to quickly collect valuable data and provide instant access to survey results through a real-time dashboard for immediate consumption. <br> <br> Please take a few minutes to answer the following questions.",
+        "fr": "Merci de participer à cette enquête. Les résultats de cette enquête serviront à vous montrer comment Evalhalla peut être utilisé pour la collecte rapide des données utiles ainsi que pour fournir un accès instantané aux résultats de l’enquête via un tableau de bord en temps réel pour une consommation immédiate.<br> <br> Veuillez prendre quelques minutes pour répondre aux questions suivantes."
+    },
+    "valid": {
+        "from": "2019-06-01",
+        "to": "2020-06-01"
+    },
+    "version": "0.0.1",
+    "questions": [
+        {
+            "qid": "none",
+            "cortex": {
+                "atOrder": "0",
+                "questionType": "RENDER",
+                "classifiedAs": "PAGE_BREAK"
+            },
+            "question": "none",
+            "description": "none",
+            "language": "none",
+            "questionType": "page break",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": []
+        },
+        {
+            "qid": "none",
+            "cortex": {
+                "uid": "TEST_SUR_i_0",
+                "atOrder": "0",
+                "questionType": "RENDER",
+                "classifiedAs": "INSTRUCTIVE_TEXT"
+            },
+            "question": {
+                "en": "Tell us a little about yourself.",
+                "fr": "Dites nous un peu à votre sujet"
+            },
+            "description": {
+                "en": "Tell us a little about yourself.",
+                "fr": "Dites nous un peu à votre sujet"
+            },
+            "language": "en",
+            "questionType": "instruction",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": []
+        },
+        {
+            "qid": "1",
+            "cortex": {
+                "uid": "TEST_SUR_q_1",
+                "atOrder": "1",
+                "questionType": "CLASSIFIED",
+                "classifiedAs": "GC_Language"
+            },
+            "question": {
+                "en": "What is your first official language?",
+                "fr": "Quelle est votre première langue officielle?"
+            },
+            "description": {
+                "en": "What is your first official language?",
+                "fr": "Quelle est votre première langue officielle?"
+            },
+            "language": "en",
+            "questionType": "text",
+            "required": "false",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": []
+        },
+        {
+            "qid": "2",
+            "cortex": {
+                "uid": "TEST_SUR_q_2",
+                "atOrder": "2",
+                "questionType": "CLASSIFIED",
+                "classifiedAs": "GC_Org"
+            },
+            "question": {
+                "en": "Which department do you currently work for?",
+                "fr": "Pour quel ministère travaillez-vous actuellement?"
+            },
+            "description": {
+                "en": "Which department do you currently work for?",
+                "fr": "Pour quel ministère travaillez-vous actuellement?"
+            },
+            "language": "en",
+            "questionType": "text",
+            "required": "false",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": []
+        },
+        {
+            "qid": "3",
+            "cortex": {
+                "uid": "TEST_SUR_q_3",
+                "atOrder": "3",
+                "questionType": "CLASSIFIED",
+                "classifiedAs": "GC_ClsLvl"
+            },
+            "question": {
+                "en": "What is your classification (group and level)?",
+                "fr": "Quelle est votre classification (groupe et niveau)?"
+            },
+            "description": {
+                "en": "What is your classification (group and level)?",
+                "fr": "Quelle est votre classification (groupe et niveau)?"
+            },
+            "language": "en",
+            "questionType": "text",
+            "required": "false",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": []
+        },
+        {
+            "qid": "4",
+            "cortex": {
+                "uid": "TEST_SUR_q_4",
+                "atOrder": "4",
+                "questionType": "SINGLE_CHOICE",
+                "classifiedAs": "RGROUP"
+            },
+            "question": {
+                "en": "What is the highest degree or level of school you have completed?",
+                "fr": "Quel est le degré ou le niveau d'études le plus élevé que vous avez complété?"
+            },
+            "description": {
+                "en": "What is the highest degree or level of school you have completed?",
+                "fr": "Quel est le degré ou le niveau d'études le plus élevé que vous avez complété?"
+            },
+            "language": "en",
+            "questionType": "mcq",
+            "required": "true",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": [
+                {
+                    "value": {
+                        "en": "No certificate, diploma or degree",
+                        "fr": "Aucun certificat, diplôme ou degré"
+                    },
+                    "description": {
+                        "en": "No certificate, diploma or degree",
+                        "fr": "Aucun certificat, diplôme ou degré"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Secondary (high) school diploma or equivalency certificate",
+                        "fr": "Diplôme d'études secondaires ou attestation d'équivalence"
+                    },
+                    "description": {
+                        "en": "Secondary (high) school diploma or equivalency certificate",
+                        "fr": "Diplôme d'études secondaires ou attestation d'équivalence"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Apprenticeship or trades certificate or diploma",
+                        "fr": "Certificat ou diplôme d'apprenti ou d'une école de métiers"
+                    },
+                    "description": {
+                        "en": "Apprenticeship or trades certificate or diploma",
+                        "fr": "Certificat ou diplôme d'apprenti ou d'une école de métiers"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "College, CEGEP or other non-university certificate or diploma",
+                        "fr": "Certificat ou diplôme d'un collège, d'un cégep ou d'un autre établissement non universitaire"
+                    },
+                    "description": {
+                        "en": "College, CEGEP or other non-university certificate or diploma",
+                        "fr": "Certificat ou diplôme d'un collège, d'un cégep ou d'un autre établissement non universitaire"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "University certificate or diploma below bachelor level",
+                        "fr": "Certificat ou diplôme universitaire inférieur au baccalauréat"
+                    },
+                    "description": {
+                        "en": "University certificate or diploma below bachelor level",
+                        "fr": "Certificat ou diplôme universitaire inférieur au baccalauréat"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "University certificate, diploma or degree at bachelor level or above",
+                        "fr": "Certificat, diplôme ou grade universitaire au niveau du baccalauréat ou supérieur"
+                    },
+                    "description": {
+                        "en": "University certificate, diploma or degree at bachelor level or above",
+                        "fr": "Certificat, diplôme ou grade universitaire au niveau du baccalauréat ou supérieur"
+                    }
+                }
+            ]
+        },
+        {
+            "qid": "5",
+            "cortex": {
+                "uid": "TEST_SUR_q_5",
+                "atOrder": "5",
+                "questionType": "MULTI_CHOICE",
+                "classifiedAs": "CGROUP"
+            },
+            "question": {
+                "en": "During which month of the year are you most likely to participate in work learning activities?",
+                "fr": "Au cours de quel mois de l'année êtes-vous le plus susceptible de participer à des activités d'apprentissage professionnel?"
+            },
+            "description": {
+                "en": "During which month of the year are you most likely to participate in work learning activities?",
+                "fr": "Au cours de quel mois de l'année êtes-vous le plus susceptible de participer à des activités d'apprentissage professionnel?"
+            },
+            "language": "en",
+            "questionType": "mcq",
+            "required": "true",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": [
+                {
+                    "value": {
+                        "en": "January",
+                        "fr": "Janvier"
+                    },
+                    "description": {
+                        "en": "January",
+                        "fr": "Janvier"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "February",
+                        "fr": "Février"
+                    },
+                    "description": {
+                        "en": "February",
+                        "fr": "Février"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "March",
+                        "fr": "Mars"
+                    },
+                    "description": {
+                        "en": "March",
+                        "fr": "Mars"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "April",
+                        "fr": "Avril"
+                    },
+                    "description": {
+                        "en": "April",
+                        "fr": "Avril"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "May",
+                        "fr": "Mai"
+                    },
+                    "description": {
+                        "en": "May",
+                        "fr": "Mai"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "June",
+                        "fr": "Juin"
+                    },
+                    "description": {
+                        "en": "June",
+                        "fr": "Juin"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "July",
+                        "fr": "Juillet"
+                    },
+                    "description": {
+                        "en": "July",
+                        "fr": "Juillet"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "August",
+                        "fr": "Août"
+                    },
+                    "description": {
+                        "en": "August",
+                        "fr": "Août"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "September",
+                        "fr": "Septembre"
+                    },
+                    "description": {
+                        "en": "September",
+                        "fr": "Septembre"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "October",
+                        "fr": "Octobre"
+                    },
+                    "description": {
+                        "en": "October",
+                        "fr": "Octobre"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "November",
+                        "fr": "Novembre"
+                    },
+                    "description": {
+                        "en": "November",
+                        "fr": "Novembre"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "December",
+                        "fr": "Decembre"
+                    },
+                    "description": {
+                        "en": "December",
+                        "fr": "Decembre"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "None",
+                        "fr": "Aucun"
+                    },
+                    "description": {
+                        "en": "None",
+                        "fr": "Aucun"
+                    }
+                }
+            ]
+        },
+        {
+            "qid": "6",
+            "cortex": {
+                "uid": "TEST_SUR_q_6",
+                "atOrder": "6",
+                "questionType": "MULTI_CHOICE",
+                "classifiedAs": "CGROUP"
+            },
+            "question": {
+                "en": "What is your preferred method of learning?",
+                "fr": "Quelle est votre méthode d'apprentissage préférée?"
+            },
+            "description": {
+                "en": "What is your preferred method of learning?",
+                "fr": "Quelle est votre méthode d'apprentissage préférée?"
+            },
+            "language": "en",
+            "questionType": "mcq",
+            "required": "true",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": [
+                {
+                    "value": {
+                        "en": "Online",
+                        "fr": "En ligne"
+                    },
+                    "description": {
+                        "en": "Online",
+                        "fr": "En ligne"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "In-class",
+                        "fr": "En cours"
+                    },
+                    "description": {
+                        "en": "In-class",
+                        "fr": "En cours"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Web conference",
+                        "fr": "Conférence Web"
+                    },
+                    "description": {
+                        "en": "Web conference",
+                        "fr": "Conférence Web"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Documentation",
+                        "fr": "Documentation"
+                    },
+                    "description": {
+                        "en": "Documentation",
+                        "fr": "Documentation"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Webcast",
+                        "fr": "Webcast"
+                    },
+                    "description": {
+                        "en": "Webcast",
+                        "fr": "Webcast"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Virtual classroom",
+                        "fr": "Classe virtuelle"
+                    },
+                    "description": {
+                        "en": "Virtual classroom",
+                        "fr": "Classe virtuelle"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Learning events",
+                        "fr": "Événements d’apprentissage"
+                    },
+                    "description": {
+                        "en": "Learning events",
+                        "fr": "Événements d’apprentissage"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Other",
+                        "fr": "Autre"
+                    },
+                    "description": {
+                        "en": "Other",
+                        "fr": "Autre"
+                    }
+                }
+            ]
+        },
+        {
+            "qid": "none",
+            "cortex": {
+                "atOrder": "6",
+                "questionType": "RENDER",
+                "classifiedAs": "PAGE_BREAK"
+            },
+            "question": "none",
+            "description": "none",
+            "language": "none",
+            "questionType": "page break",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": []
+        },
+        {
+            "qid": "none",
+            "cortex": {
+                "uid": "TEST_SUR_i_6",
+                "atOrder": "6",
+                "questionType": "RENDER",
+                "classifiedAs": "INSTRUCTIVE_TEXT"
+            },
+            "question": {
+                "en": "Tell us about your overall impressions about the Evalhalla evaluation tool?",
+                "fr": "Dites nous au sujet de vos impréssions générales de l’outil d’évaluation Evalhalla"
+            },
+            "description": {
+                "en": "Tell us about your overall impressions about the Evalhalla evaluation tool?",
+                "fr": "Dites nous au sujet de vos impréssions générales de l’outil d’évaluation Evalhalla"
+            },
+            "language": "en",
+            "questionType": "instruction",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": []
+        },
+        {
+            "qid": "7",
+            "cortex": {
+                "uid": "TEST_SUR_q_7",
+                "atOrder": "7",
+                "questionType": "FREE_TEXT",
+                "classifiedAs": "TEXTAREA"
+            },
+            "question": {
+                "en": "What are your overall impressions about Evalhalla?",
+                "fr": "Quelles sont vos impressions générales sur Evalhalla?"
+            },
+            "description": {
+                "en": "What are your overall impressions about Evalhalla?",
+                "fr": "Quelles sont vos impressions générales sur Evalhalla?"
+            },
+            "language": "en",
+            "questionType": "text",
+            "required": "true",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": []
+        },
+        {
+            "qid": "8",
+            "cortex": {
+                "uid": "TEST_SUR_q_8",
+                "atOrder": "8",
+                "questionType": "MULTI_CHOICE",
+                "classifiedAs": "CGROUP"
+            },
+            "question": {
+                "en": "In your opinion, what are the most useful features of Evalhalla?",
+                "fr": "A votre avis, quelles sont les fonctionnalités les plus utiles d'Evalhalla?"
+            },
+            "description": {
+                "en": "In your opinion, what are the most useful features of Evalhalla?",
+                "fr": "A votre avis, quelles sont les fonctionnalités les plus utiles d'Evalhalla?"
+            },
+            "language": "en",
+            "questionType": "mcq",
+            "required": "true",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": [
+                {
+                    "value": {
+                        "en": "Survey designer tool",
+                        "fr": "Outil de conception d'enquête"
+                    },
+                    "description": {
+                        "en": "Survey designer tool",
+                        "fr": "Outil de conception d'enquête"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Survey preview, while designing the survey",
+                        "fr": "Aperçu de l'enquête, lors de la conception de l'enquête"
+                    },
+                    "description": {
+                        "en": "Survey preview, while designing the survey",
+                        "fr": "Aperçu de l'enquête, lors de la conception de l'enquête"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Ease of filling out the survey",
+                        "fr": "Facilité à remplir l’enquête"
+                    },
+                    "description": {
+                        "en": "Ease of filling out the survey",
+                        "fr": "Facilité à remplir l’enquête"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Instant access to real-time dashboards",
+                        "fr": "Accès instantané aux tableaux de bord en temps réel"
+                    },
+                    "description": {
+                        "en": "Instant access to real-time dashboards",
+                        "fr": "Accès instantané aux tableaux de bord en temps réel"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Overall look and feel",
+                        "fr": "Apparence générale"
+                    },
+                    "description": {
+                        "en": "Overall look and feel",
+                        "fr": "Apparence générale"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Overall user experience",
+                        "fr": "Expérience globale de l'utilisateur"
+                    },
+                    "description": {
+                        "en": "Overall user experience",
+                        "fr": "Expérience globale de l'utilisateur"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "None",
+                        "fr": "Auncune"
+                    },
+                    "description": {
+                        "en": "None",
+                        "fr": "Auncune"
+                    }
+                }
+            ]
+        },
+        {
+            "qid": "9",
+            "cortex": {
+                "uid": "TEST_SUR_q_9",
+                "atOrder": "9",
+                "questionType": "FREE_TEXT",
+                "classifiedAs": "TEXTAREA"
+            },
+            "question": {
+                "en": "What would you like to see changed or improved in Evalhalla?",
+                "fr": "Qu'aimeriez-vous voir changé ou amélioré dans Evalhalla?"
+            },
+            "description": {
+                "en": "What would you like to see changed or improved in Evalhalla?",
+                "fr": "Qu'aimeriez-vous voir changé ou amélioré dans Evalhalla?"
+            },
+            "language": "en",
+            "questionType": "text",
+            "required": "false",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": []
+        },
+        {
+            "qid": "10",
+            "cortex": {
+                "uid": "TEST_SUR_q_10",
+                "atOrder": "10",
+                "questionType": "SINGLE_CHOICE",
+                "classifiedAs": "RGROUP"
+            },
+            "question": {
+                "en": "Based on the demo you saw today, does it look easy to create surveys using Evalhalla?",
+                "fr": "D'après la demo que vous avez vue aujourd'hui, semble-t-il facile de créer des enquêtes à l'aide d'Evalhalla?"
+            },
+            "description": {
+                "en": "Based on the demo you saw today, does it look easy to create surveys using Evalhalla?",
+                "fr": "D'après la demo que vous avez vue aujourd'hui, semble-t-il facile de créer des enquêtes à l'aide d'Evalhalla?"
+            },
+            "language": "en",
+            "questionType": "mcq",
+            "required": "true",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": [
+                {
+                    "value": {
+                        "en": "Yes",
+                        "fr": "Oui"
+                    },
+                    "description": {
+                        "en": "Yes",
+                        "fr": "Oui"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "No",
+                        "fr": "Non"
+                    },
+                    "description": {
+                        "en": "No",
+                        "fr": "Non"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Unsure",
+                        "fr": "Incertain"
+                    },
+                    "description": {
+                        "en": "Unsure",
+                        "fr": "Incertain"
+                    }
+                }
+            ]
+        },
+        {
+            "qid": "11",
+            "cortex": {
+                "uid": "TEST_SUR_q_11",
+                "atOrder": "11",
+                "questionType": "SINGLE_CHOICE",
+                "classifiedAs": "RGROUP"
+            },
+            "question": {
+                "en": "Overall, Evalhalla meets my expectations and needs for a course and event evaluation tool.",
+                "fr": "Dans l’ensemble, Evalhalla répond à mes attentes et à mes besoins en matière d’outil d’évaluation de cours et d’événement."
+            },
+            "description": {
+                "en": "Overall, Evalhalla meets my expectations and needs for a course and event evaluation tool.",
+                "fr": "Dans l’ensemble, Evalhalla répond à mes attentes et à mes besoins en matière d’outil d’évaluation de cours et d’événement."
+            },
+            "language": "en",
+            "questionType": "mcq",
+            "required": "true",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": [
+                {
+                    "value": {
+                        "en": "Strongly agree",
+                        "fr": "Tout à fait d'accord"
+                    },
+                    "description": {
+                        "en": "Strongly agree",
+                        "fr": "Tout à fait d'accord"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Agree",
+                        "fr": "D'accord"
+                    },
+                    "description": {
+                        "en": "Agree",
+                        "fr": "D'accord"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Neither agree nor disagree",
+                        "fr": "Ni d’accord ou ni en désaccord"
+                    },
+                    "description": {
+                        "en": "Neither agree nor disagree",
+                        "fr": "Ni d’accord ou ni en désaccord"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Disagree",
+                        "fr": "Désaccord"
+                    },
+                    "description": {
+                        "en": "Disagree",
+                        "fr": "Désaccord"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Strongly disagree",
+                        "fr": "Pas du tout d’accord"
+                    },
+                    "description": {
+                        "en": "Strongly disagree",
+                        "fr": "Pas du tout d’accord"
+                    }
+                }
+            ]
+        },
+        {
+            "qid": "12",
+            "cortex": {
+                "uid": "TEST_SUR_q_12",
+                "atOrder": "12",
+                "questionType": "SINGLE_CHOICE",
+                "classifiedAs": "SCALE_1_TO_10"
+            },
+            "question": {
+                "en": "On a scale from 1 (not at all likely) to 10 (extremely likely), how likely would you recommend Evalhalla to others?",
+                "fr": "Sur une échelle de 1 (pas du tout probable) à 10 (extrêmement probable), dans quelle mesure recommanderiez-vous Evalhalla à d'autres?"
+            },
+            "description": {
+                "en": "On a scale from 1 (not at all likely) to 10 (extremely likely), how likely would you recommend Evalhalla to others?",
+                "fr": "Sur une échelle de 1 (pas du tout probable) à 10 (extrêmement probable), dans quelle mesure recommanderiez-vous Evalhalla à d'autres?"
+            },
+            "language": "en",
+            "questionType": "dropdown",
+            "required": "true",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": [
+                {
+                    "value": "10",
+                    "description": {
+                        "en": "Extremely likely",
+                        "fr": "Extrêmement probable"
+                    }
+                },
+                {
+                    "value": "9",
+                    "description": "9"
+                },
+                {
+                    "value": "8",
+                    "description": "8"
+                },
+                {
+                    "value": "7",
+                    "description": "7"
+                },
+                {
+                    "value": "6",
+                    "description": "6"
+                },
+                {
+                    "value": "5",
+                    "description": "5"
+                },
+                {
+                    "value": "4",
+                    "description": "4"
+                },
+                {
+                    "value": "3",
+                    "description": "3"
+                },
+                {
+                    "value": "2",
+                    "description": "2"
+                },
+                {
+                    "value": "1",
+                    "description": {
+                        "en": "Not at all likely",
+                        "fr": "Pas du tout probable"
+                    }
+                },
+                {
+                    "value": "Unsure",
+                    "description": {
+                        "en": "Unsure",
+                        "fr": "Incertain"
+                    }
+                }
+            ]
+        },
+        {
+            "qid": "none",
+            "cortex": {
+                "atOrder": "12",
+                "questionType": "RENDER",
+                "classifiedAs": "PAGE_BREAK"
+            },
+            "question": "none",
+            "description": "none",
+            "language": "none",
+            "questionType": "page break",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": []
+        },
+        {
+            "qid": "none",
+            "cortex": {
+                "uid": "TEST_SUR_i_12",
+                "atOrder": "12",
+                "questionType": "RENDER",
+                "classifiedAs": "INSTRUCTIVE_TEXT"
+            },
+            "question": {
+                "en": "Tell us about your overall impressions of today’s presentation and demo.",
+                "fr": "Dites-nous au sujet de vos impressions générales sur la présentation et la démo d’aujourd’hui."
+            },
+            "description": {
+                "en": "Tell us about your overall impressions of today’s presentation and demo.",
+                "fr": "Dites-nous au sujet de vos impressions générales sur la présentation et la démo d’aujourd’hui."
+            },
+            "language": "en",
+            "questionType": "instruction",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": []
+        },
+        {
+            "qid": "13",
+            "cortex": {
+                "uid": "TEST_SUR_q_13",
+                "atOrder": "13",
+                "questionType": "SINGLE_CHOICE",
+                "classifiedAs": "RGROUP"
+            },
+            "question": {
+                "en": "Overall, how satisfied are you with the presentation?",
+                "fr": "Globalement, dans quelle mesure êtes-vous satisfait de la présentation?"
+            },
+            "description": {
+                "en": "Overall, how satisfied are you with the presentation?",
+                "fr": "Globalement, dans quelle mesure êtes-vous satisfait de la présentation?"
+            },
+            "language": "en",
+            "questionType": "mcq",
+            "required": "true",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": [
+                {
+                    "value": {
+                        "en": "Very satisfied",
+                        "fr": "Très satisfait"
+                    },
+                    "description": {
+                        "en": "Very satisfied",
+                        "fr": "Très satisfait"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Satisfied",
+                        "fr": "Satisfait"
+                    },
+                    "description": {
+                        "en": "Satisfied",
+                        "fr": "Satisfait"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Neither satisfied nor dissatisfied",
+                        "fr": "Ni satisfait ni insatisfait"
+                    },
+                    "description": {
+                        "en": "Neither satisfied nor dissatisfied",
+                        "fr": "Ni satisfait ni insatisfait"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Somewhat dissatisfied",
+                        "fr": "Quelque peu insatisfait"
+                    },
+                    "description": {
+                        "en": "Somewhat dissatisfied",
+                        "fr": "Quelque peu insatisfait"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Very dissatisfied",
+                        "fr": "Très insatisfait"
+                    },
+                    "description": {
+                        "en": "Very dissatisfied",
+                        "fr": "Très insatisfait"
+                    }
+                }
+            ]
+        },
+        {
+            "qid": "14",
+            "cortex": {
+                "uid": "TEST_SUR_q_14",
+                "atOrder": "14",
+                "questionType": "SINGLE_CHOICE",
+                "classifiedAs": "RGROUP"
+            },
+            "question": {
+                "en": "How satisfied are you with the presentation and demo delivery method?",
+                "fr": "Dans quelle mesure êtes-vous satisfait de la méthode de présentation et de démo?"
+            },
+            "description": {
+                "en": "How satisfied are you with the presentation and demo delivery method?",
+                "fr": "Dans quelle mesure êtes-vous satisfait de la méthode de présentation et de démo?"
+            },
+            "language": "en",
+            "questionType": "mcq",
+            "required": "true",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": [
+                {
+                    "value": {
+                        "en": "Very satisfied",
+                        "fr": "Très satisfait"
+                    },
+                    "description": {
+                        "en": "Very satisfied",
+                        "fr": "Très satisfait"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Satisfied",
+                        "fr": "Satisfait"
+                    },
+                    "description": {
+                        "en": "Satisfied",
+                        "fr": "Satisfait"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Neither satisfied nor dissatisfied",
+                        "fr": "Ni satisfait ni insatisfait"
+                    },
+                    "description": {
+                        "en": "Neither satisfied nor dissatisfied",
+                        "fr": "Ni satisfait ni insatisfait"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Somewhat dissatisfied",
+                        "fr": "Quelque peu insatisfait"
+                    },
+                    "description": {
+                        "en": "Somewhat dissatisfied",
+                        "fr": "Quelque peu insatisfait"
+                    }
+                },
+                {
+                    "value": {
+                        "en": "Very dissatisfied",
+                        "fr": "Très insatisfait"
+                    },
+                    "description": {
+                        "en": "Very dissatisfied",
+                        "fr": "Très insatisfait"
+                    }
+                }
+            ]
+        },
+        {
+            "qid": "15",
+            "cortex": {
+                "uid": "TEST_SUR_q_15",
+                "atOrder": "15",
+                "questionType": "FREE_TEXT",
+                "classifiedAs": "TEXTAREA"
+            },
+            "question": {
+                "en": "Is there anything else you would like to share about the presentation, demo or Evalhalla?",
+                "fr": "Y a-t-il autre chose que vous voudriez partager au sujet de la présentation, de la démo ou d'Evalhalla?"
+            },
+            "description": {
+                "en": "Is there anything else you would like to share about the presentation, demo or Evalhalla?",
+                "fr": "Y a-t-il autre chose que vous voudriez partager au sujet de la présentation, de la démo ou d'Evalhalla?"
+            },
+            "language": "en",
+            "questionType": "text",
+            "required": "false",
+            "randomOrder": "false",
+            "randomOptions": "false",
+            "options": []
+        }
+    ]
+}

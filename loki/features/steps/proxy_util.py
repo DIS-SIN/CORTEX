@@ -38,7 +38,7 @@ def consume_message_via_proxy(context, topic):
 
     try:
         r = requests.get(
-            '%s/%s_consumer/instances/%s_instance/records' % (context.rest_proxy_consumer_url, topic, topic)
+            '%s/%s_consumer/instances/%s_instance/records' % (context.rest_proxy_consumer_url, topic, topic),
             headers=CONSUMER_HDRS_A,
             timeout=3
         )
