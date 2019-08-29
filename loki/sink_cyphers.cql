@@ -4,7 +4,7 @@ WITH event, apoc.convert.fromJsonMap(event.content) AS c
   MERGE (s:Valhalla_Survey {uid: event.uid, format: event.format})
 WITH s, c
   // Set the survey title, description (w/both languages) version number and valid date range
-  SET s.title = [c['title']['en'], c['title']['fr']], s.description = [c['description']['en'], c['description']['fr']], s.valid = [c['valid']['from'], c['valid']['to']], s.version = c.version
+  SET s.title = [c['title']['en'], c['title']['fr']], s.description = [c['description']['en'], c['description']['fr']], s.valid = [c['valid']['from'], c['valid']['to']], s.version = c['version']
 
 WITH s, c['questions'] AS questions
   // Transform event.content.questions to individual rows with variable name cq
