@@ -8,6 +8,7 @@ echo ""
 
 if [ $# -eq 1 ]; then
   export YGGDRASIL_PUBLIC_IP=$1
+  echo "Use public ip "$YGGDRASIL_PUBLIC_IP
 
 else
   unameOut="$(uname -s)"
@@ -26,6 +27,7 @@ else
       exit
       ;;
   esac
+  echo "Use local ip "$YGGDRASIL_PUBLIC_IP
 fi
 
 echo "yggdrasil_broker(s) will listen on "$YGGDRASIL_PUBLIC_IP"."
