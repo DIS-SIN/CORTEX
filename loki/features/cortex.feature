@@ -6,6 +6,6 @@ Feature: Evalhalla
   Please take a few minutes to answer the following questions.
 
   Scenario: Sending and receiving survey in evalese format
-     Given "designer" creates "test_sur" in "evalese" format
-      When "designer" sends "test_sur" in "evalese" via "survey_evalese" to Yggdrasil
-      Then "player" receives "test_sur" in "evalese" via "survey_evalese" from Yggdrasil
+     Given "designer" creates "TEST_SUR" in "evalese" format
+      When "designer" sends "TEST_SUR" in "evalese" via "survey_evalese" to Yggdrasil
+      Then "player" receives "TEST_SUR" in "evalese" via "survey_evalese" from Yggdrasil

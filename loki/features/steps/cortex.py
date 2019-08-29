@@ -14,7 +14,7 @@ from time import sleep
 
 @given('"{sender_name}" creates "{survey_uid}" in "{format}" format')
 def step_impl(context, sender, survey_uid, format):
-    file_name = 'evalhalla_%s_survey_%s.json' % (survey_uid, format)
+    file_name = '%s_%s.json' % (survey_uid, format)
     file_content = get_content(file_name)
     file_md5 = get_md5(file_content)
 
