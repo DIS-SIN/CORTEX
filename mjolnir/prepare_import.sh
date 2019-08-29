@@ -1,9 +1,9 @@
 #!/bin/bash
 
 if [ $# -lt 5 ]; then
-  echo "Usage: ./run_remote_import.sh <dataset_directory> <jotunheimr_ip> <yggdrasil_broker_ip> <yggdrasil_schema_registry_ip> <yggdrasil_connect_ip>"
+  echo "Usage: ./prepare_import.sh <dataset_directory> <jotunheimr_ip> <yggdrasil_broker_ip> <yggdrasil_schema_registry_ip> <yggdrasil_connect_ip>"
   echo "Example:"
-  echo "  ./run_remote_import.sh ../datasets "
+  echo "  ./prepare_import.sh ../datasets "
 fi
 
 DATA_DIR=$1
@@ -87,13 +87,3 @@ esac
 ./wield_mjolnir.sh -e $DATA_DIR/tmp/config.ini $DATA_DIR $DATA_DIR/tmp $DATA_DIR/cp:$DATA_DIR/gc
 
 rm -rf $DATA_DIR/cp/tsv $DATA_DIR/cp/src $DATA_DIR/gc/tsv $DATA_DIR/gc/src
-
-# ./wield_mjolnir.sh -s $DATA_DIR/tmp/config.ini $DATA_DIR $DATA_DIR/tmp
-
-sleep 10
-./wield_mjolnir.sh -c $DATA_DIR/tmp/config.ini $DATA_DIR $DATA_DIR/tmp
-
-sleep 10
-./wield_mjolnir.sh -r $DATA_DIR/tmp/config.ini $DATA_DIR $DATA_DIR/tmp
-
-rm -rf $DATA_DIR/tmp
