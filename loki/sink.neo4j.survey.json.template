@@ -1,19 +1,18 @@
 {
-  "name": "Neo4jSinkConnector",
+  "name": "Neo4jSurveySinkConnector",
   "config": {
-    "topics": "survey_json,survey_response",
+    "topics": "survey_template,survey_response",
     "connector.class": "streams.kafka.connect.sink.Neo4jSinkConnector",
     "errors.retry.timeout": "-1",
     "errors.retry.delay.max.ms": "1000",
     "errors.tolerance": "all",
     "errors.log.enable": true,
     "errors.log.include.messages": true,
-    "neo4j.server.uri": "bolt://jotunheimr:7687",
+    "neo4j.server.uri": "bolt://JOTUNHEIMR_IP:7687",
     "neo4j.authentication.basic.username": "neo4j",
     "neo4j.authentication.basic.password": "##dis@da2019##",
     "neo4j.encryption.enabled": false,
-    "neo4j.batch.size": "1",
-    "neo4j.topic.cypher.survey_json": "{SURVEY_JSON}",
-    "neo4j.topic.cypher.survey_response": "{SURVEY_RESPONSE}"
+    "neo4j.topic.cypher.survey_template": "SURVEY_TEMPLATE",
+    "neo4j.topic.cypher.survey_response": "SURVEY_RESPONSE"
   }
 }

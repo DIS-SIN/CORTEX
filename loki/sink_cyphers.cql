@@ -1,4 +1,4 @@
->>>SURVEY_JSON
+>>>SURVEY_TEMPLATE
 WITH event, apoc.convert.fromJsonMap(event.content) AS c
   // Make (or update) the Survey, setting the ID and format
   MERGE (s:Valhalla_Survey {uid: event.uid, format: event.format})
