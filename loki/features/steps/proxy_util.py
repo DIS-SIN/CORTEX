@@ -10,13 +10,11 @@ CONSUMER_HDRS_C = {"Content-Type": "application/vnd.kafka.v2+json"}
 CONSUMER_HDRS_A = {"Accept": "application/vnd.kafka.avro.v2+json"}
 
 
-def produce_message_via_proxy(context, topic, uid, format, content):
+def produce_message_via_proxy(context, topic, survey):
     r = requests.post(
         '%s/%s' % (context.rest_proxy_topic_url, topic),
         headers=PRODUCER_HDRS,
-        data=context.survey_schema % json.dumps(
-            {"uid": uid, "format": format, "content": content}
-        )
+        data=context.survey_schema % json.dumps(survey)
     )
     return r
 
@@ -44,4 +42,4 @@ def consume_message_via_proxy(context, topic):
         )
     except requests.exceptions.Timeout:
         return ''
-    return r.json()
+    return r

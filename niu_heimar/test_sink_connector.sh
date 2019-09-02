@@ -7,7 +7,7 @@ if [ $# -lt 1 ]; then
   exit
 fi
 
-if [ $# -eq2 1 ]
+if [ $# -eq 2 ]; then
   JOTUNHEIMR_PUBLIC_IP=$2
   cp sink.avro.test.template.json sink.avro.test.json
   PATTERN=s/JOTUNHEIMR_PUBLIC_IP/$JOTUNHEIMR_PUBLIC_IP:7687/g

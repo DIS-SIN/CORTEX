@@ -1,8 +1,8 @@
 #!/bin/bash
 
 if [ $# -lt 2 ]; then
-  echo "Usage: ./start_sink_connector.sh <yggdrasil_connect_ip> <jotunheimr_ip>"
-  echo "Example: ./start_sink_connector.sh 10.0.1.23 10.0.1.119"
+  echo "Usage: ./create_sink_connector.sh <yggdrasil_connect_ip> <jotunheimr_ip>"
+  echo "Example: ./create_sink_connector.sh 10.0.1.23 10.0.1.119"
   exit
 fi
 

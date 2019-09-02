@@ -22,11 +22,25 @@ RESPONSE_VALUE_SCHEMA = """
 }
 """
 
+SENTIMENT_VALUE_SCHEMA = """
+{
+    "namespace": "CORTEX",
+    "name": "Sentiment",
+    "type": "record",
+    "fields": [
+        {"name": "uid", "type": "string"},
+        {"name": "survey_uid", "type": "string"},
+        {"name": "data", "type": "string"}
+    ]
+}
+"""
+
 
 def before_all(context):
 
     context.survey_schema = SURVEY_VALUE_SCHEMA
     context.response_schema = avro.loads(RESPONSE_VALUE_SCHEMA)
+    context.sentiment_schema = avro.loads(SENTIMENT_VALUE_SCHEMA)
 
     context.broker = context.config.userdata.get("yggdrasil_broker")
     context.schema_registry = context.config.userdata.get("yggdrasil_schema_registry")
