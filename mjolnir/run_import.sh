@@ -4,6 +4,7 @@ if [ $# -lt 1 ]; then
   echo "Usage: ./run_import.sh <dataset_directory>"
   echo "Example:"
   echo "  ./run_import.sh ../datasets "
+  exit
 fi
 
 DATA_DIR=$1

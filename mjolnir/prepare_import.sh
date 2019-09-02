@@ -4,6 +4,7 @@ if [ $# -lt 5 ]; then
   echo "Usage: ./prepare_import.sh <dataset_directory> <jotunheimr_ip> <yggdrasil_broker_ip> <yggdrasil_schema_registry_ip> <yggdrasil_connect_ip>"
   echo "Example:"
   echo "  ./prepare_import.sh ../datasets "
+  exit
 fi
 
 DATA_DIR=$1

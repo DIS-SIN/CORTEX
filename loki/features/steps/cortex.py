@@ -65,7 +65,7 @@ def step_impl(context, receiver_name, survey_uid, format, sender_name):
         if q['qid'] != 'none'
     )
 
-@then('it creates a "{node_label}" and "{count}" of "{related_node_label}"')
+@then('it creates a "{node_label}" and a number of "{related_node_label}"')
 def step_impl(context, node_label, count, related_node_label):
     c, mc = find_node_and_count_relations(context, context.survey_uid, node_label, related_node_label)
     assert int(c) == len(context.question_uids)
