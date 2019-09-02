@@ -25,11 +25,12 @@ def produce_messages(input_file, prefixed_topic, producer):
 if __name__ == "__main__":
 
     if len(sys.argv) < 3:
-        print("Usage: python producer.py <config> <tsv_dir>")
+        print("Usage: python producer.py <config> <tsv_dir> <remote>")
         exit(1)
 
     handler = ConfigHandler(sys.argv[1])
     tsv_dir = sys.argv[2]
+    remote = len(sys.argv) == 4
 
     config = handler.get_eval_option('yggdrasil', 'conf')
     prefix = handler.get_config_option('info', 'prefix')
@@ -42,10 +43,15 @@ if __name__ == "__main__":
     avro_producer = AvroProducer(
         {
             'bootstrap.servers': broker,
-            'schema.registry.url': schema_registry
+            'schema.registry.url': schema_registry,
         },
         default_value_schema=avro_schema
     )
+
+    # if remote:
+    #     schema_topic = '%s_constraints' % prefix
+    #     avro_producer.produce(topic=schema_topic, value={"pc_code": "XYZ"})
+    #     avro_producer.flush()
 
     entity_topics = [
         k for k, _ in handler.get_eval_option('jotunheimr', 'topics').items()
@@ -56,6 +62,7 @@ if __name__ == "__main__":
         k for k, _ in handler.get_eval_option('jotunheimr', 'topics').items()
         if '_TO_' in k
     ]
+
 
     for topic in entity_topics + relation_topics:
         file_name = '%s/%s.tsv' % (tsv_dir, topic)

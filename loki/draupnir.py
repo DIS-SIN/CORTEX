@@ -42,14 +42,14 @@ RESPONSE_VALUE_SCHEMA = avro.loads(RESPONSE_VALUE_SCHEMA_STR)
 
 SURVEYS = {
     'test_sur': {
-        'survey_evalese': 'data/evalhalla_test_sur_survey_evalese.json',
-        'survey_json': 'data/evalhalla_test_sur_survey_template.json',
-        'survey_response': 'data/evalhalla_test_sur_1k_cortexresp_test_data.json',
+        'survey_evalese': 'data/TEST_SUR_evalese.json',
+        'survey_template': 'data/TEST_SUR_template.json',
+        'survey_response': 'data/TEST_SUR_responses.json',
     },
     'ELDP': {
-        'survey_evalese': 'data/evalhalla_edlp_survey_evalese.json',
-        'survey_json': 'data/evalhalla_edlp_survey_template.json',
-        'survey_response': 'data/evalhalla_edlp_1k_cortexresp_test_data.json',
+        'survey_evalese': 'data/ELDP_evalese.json',
+        'survey_template': 'data/ELDP_template.json',
+        'survey_response': 'data/ELDP_responses.json',
     },
 }
 
@@ -95,7 +95,7 @@ def produce_messages(designer_producer, player_producer):
             value={
                 "uid": survey_uid,
                 "format": "template",
-                "content": get_content(survey_dict['survey_json'])
+                "content": get_content(survey_dict['survey_template'])
             }
         )
         print('T', end='', flush=True)
@@ -163,7 +163,7 @@ def consume_messages(consumer, n_of_messages):
                 json_obj = value_str
                 if topic == 'survey_evalese':
                     consume_avro_message(consumer, topic, json_obj)
-                elif topic == 'survey_json' :
+                elif topic == 'survey_template' :
                     consume_avro_message(consumer, topic, json_obj)
                 else:
                     payload = consume_json_message(consumer, topic, json_obj)
@@ -173,7 +173,7 @@ def consume_messages(consumer, n_of_messages):
 
                 print(
                     'E' if topic == 'survey_evalese' else
-                    'T' if topic == 'survey_json' else
+                    'T' if topic == 'survey_template' else
                     'S' if topic == 'nlp_process' else
                     'M',
                     end='', flush=True

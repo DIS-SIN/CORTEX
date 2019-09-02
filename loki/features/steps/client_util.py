@@ -1,68 +1,58 @@
 import json
+import time
 import sys
 
 from confluent_kafka import avro, Consumer
 from confluent_kafka import KafkaError, KafkaException
-
 from confluent_kafka.avro import AvroProducer
-from confluent_kafka.avro import AvroConsumer
 from confluent_kafka.avro.serializer import SerializerError
 
+from hash_util import get_md5
 
-def produce_message(context, topic, uid, text):
+
+def produce_player_messages(context, topic, responses):
     producer = AvroProducer(
         {
-            'bootstrap.servers': context.broker_url,
+            'bootstrap.servers': context.broker,
             'schema.registry.url': context.schema_registry_url
         },
-        default_value_schema=context.player_schema
+        default_value_schema=context.response_schema
     )
-    producer.produce(topic=topic, value={"uid": uid, "content": text})
+
+    count = 0
+    for response in responses:
+        text = json.dumps(response)
+        producer.produce(topic=topic, value={"uid": get_md5(text), "content": text})
+        count += 1
+        if count % 100 == 0:
+            producer.flush()
+
     producer.flush()
 
 
-def consume_avro_messages(context, topic):
-    consumer = AvroConsumer({
-        'bootstrap.servers': context.broker_url,
-        'group.id': 'group_id_1',
-        'schema.registry.url': context.schema_registry_url,
-    })
-
-    consumer.subscribe([topic])
-
-    count = 0
-    while True:
-        try:
-            msg = consumer.poll(1)
-        except SerializerError as e:
-            print("Message deserialization failed for {}: {}".format(msg, e))
-            break
-
-        if msg is None:
-            print("No message")
-            continue
-
-        if msg.error():
-            print("AvroConsumer error: {}".format(msg.error()))
-            continue
-
-    print(msg)
-    consumer.close()
-    return msg
+def produce_asgard_message(context, topic, sentiment_message):
+    producer = AvroProducer(
+        {
+            'bootstrap.servers': context.broker,
+            'schema.registry.url': context.schema_registry_url
+        },
+        default_value_schema=context.sentiment_schema
+    )
+    producer.produce(topic=topic, value=sentiment_message)
+    producer.flush()
 
 
-def consume_messages(context, group_id, topic, uid):
+def consume_json_message(context, group_id, topics, timeout=5, max_messages=1):
     consumer = Consumer({
-        'bootstrap.servers': context.broker_url,
-        'group.id': group_id,
+        'bootstrap.servers': context.broker,
+        'group.id': '%s-%s' % (group_id, time.time()),
         'session.timeout.ms': 6000,
         'auto.offset.reset': 'earliest'
     })
 
-    consumer.subscribe([topic])
+    consumer.subscribe(topics)
     messages = []
 
-    # Read messages from Kafka, print to stdout
     count = 0
     try:
         while True:
@@ -70,39 +60,32 @@ def consume_messages(context, group_id, topic, uid):
             if msg is None:
                 print("No message")
                 count += 1
-                if count == 5:
-                    return False
+                if count == timeout:
+                    break
                 continue
             if msg.error():
                 raise KafkaException(msg.error())
             else:
-                # Proper message
-                sys.stderr.write('%% %s [%d] at offset %d with key %s:\n' %
-                                 (msg.topic(), msg.partition(), msg.offset(),
-                                  str(msg.key())))
-                if msg.topic() != topic:
-                    print('Wrong topic %s' % msg.topic())
-                    count += 1
-                    continue
-
-                msg_str = msg.value().decode()
-                print('msg_str', msg_str)
-
-                json_obj = json.loads(msg_str)
-                if 'payload' in json_obj:
-                    payload = json_obj['payload']
-                    print('payload', payload)
-                    if 'uid' in payload and payload['uid'].startswith(uid):
-                        return True
-                    if 'data' in payload:
-                        for item in payload['data']:
-                            if item['uid'].startswith(uid):
-                                return True
+                print('%s [%d] at offset %d with key %s:\n' % (
+                    msg.topic(), msg.partition(), msg.offset(), str(msg.key()))
+                )
+                print(msg.value())
+                json_msg = json.loads(msg.value().decode())
+                if 'payload' in json_msg:
+                    messages.append(json_msg['payload'])
+                else:
+                    messages.append(json_msg)
+                count += 1
+                if count == max_messages:
+                    break
 
     except KeyboardInterrupt:
-        sys.stderr.write('%% Aborted by user\n')
+        print('Aborted by user\n')
 
     finally:
         # Close down consumer to commit final offsets.
         consumer.close()
-    return False
+
+    if max_messages == 1 and len(messages) == 1:
+        return messages[0]
+    return messages

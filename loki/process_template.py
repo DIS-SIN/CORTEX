@@ -38,8 +38,9 @@ def write_file(file_name, text):
 
 
 if __name__ == '__main__':
-    template = get_template('sink.avro.neo4j.json.template')
+    template = get_template('sink.neo4j.survey.json.template')
     option_dict = get_options('sink_cyphers.cql')
     for k, v in option_dict.items():
-        template = template.replace('{%s}' % k, v)
-    write_file('sink.avro.neo4j.json', template)
+        template = template.replace('%s' % k, v)
+    template = template.replace('JOTUNHEIMR_IP', sys.argv[1])
+    write_file('sink.neo4j.survey.json', template)

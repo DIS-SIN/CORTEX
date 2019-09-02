@@ -47,6 +47,7 @@ def consume_test_messages(broker, schema_registry, topic):
         'bootstrap.servers': broker,
         'group.id': 'groupid',
         'schema.registry.url': schema_registry,
+        'auto.offset.reset': 'earliest'
     })
 
     consumer.subscribe([topic])
@@ -62,7 +63,7 @@ def consume_test_messages(broker, schema_registry, topic):
 
         if msg is None:
             count += 1
-            if count == 5:
+            if count == 10:
                 break
             continue
 
@@ -70,7 +71,7 @@ def consume_test_messages(broker, schema_registry, topic):
             print("AvroConsumer error: {}".format(msg.error()))
             continue
 
-        print(msg.value())
+        print('Consumed', msg.value())
 
     consumer.close()
 
