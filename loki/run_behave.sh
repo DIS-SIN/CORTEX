@@ -11,8 +11,14 @@ YGGDRASIL_BROKER_IP=$2
 YGGDRASIL_SCHEMA_REGISTRY_IP=$3
 JOTUNHEIMR_IP=$4
 
+cd data
+tar xzvf surveys.tar.gz
+cd ..
+
 behave \
   -D yggdrasil_rest_proxy=$YGGDRASIL_REST_PROXY_IP:8082 \
   -D yggdrasil_broker=$YGGDRASIL_BROKER_IP:9092,$YGGDRASIL_BROKER_IP:9093 \
   -D yggdrasil_schema_registry=$YGGDRASIL_SCHEMA_REGISTRY_IP:8081 \
   -D jotunheimr=$JOTUNHEIMR_IP:7687
+
+rm data/*.json
