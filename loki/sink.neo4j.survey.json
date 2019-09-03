@@ -8,7 +8,7 @@
     "errors.tolerance": "all",
     "errors.log.enable": true,
     "errors.log.include.messages": true,
-    "neo4j.server.uri": "bolt://192.168.86.41:7687",
+    "neo4j.server.uri": "bolt://10.0.1.119:7687",
     "neo4j.authentication.basic.username": "neo4j",
     "neo4j.authentication.basic.password": "##dis@da2019##",
     "neo4j.encryption.enabled": false,

@@ -75,8 +75,7 @@ def consume_json_message(context, group_id, topics, timeout=5, max_messages=1):
                     messages.append(json_msg['payload'])
                 else:
                     messages.append(json_msg)
-                count += 1
-                if count == max_messages:
+                if len(messages) == max_messages:
                     break
 
     except KeyboardInterrupt:

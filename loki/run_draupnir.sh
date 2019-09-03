@@ -8,4 +8,10 @@ fi
 
 export YGGDRASIL_HOST=$1
 
+cd data
+tar xzvf surveys.tar.gz
+cd ..
+
 python draupnir.py $YGGDRASIL_HOST
+
+rm data/*.json
