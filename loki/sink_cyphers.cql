@@ -1,7 +1,8 @@
 >>>SURVEY_TEMPLATE
 WITH event, apoc.convert.fromJsonMap(event.content) AS c
   // Make (or update) the Survey, setting the ID and format
-  MERGE (s:Valhalla_Survey {uid: event.uid, format: event.format})
+  MERGE (s:Valhalla_Survey {uid: event.uid})
+    SET s.format = event.format, s.content = event.content
 
 WITH s, c
   // Set the survey title, description (w/both languages) version number and valid date range
@@ -66,7 +67,7 @@ WITH r, c, c['respondent'] AS cr
     FOREACH (dummy IN CASE WHEN cr.located_in IS NOT NULL THEN [1] ELSE [] END |
       // Make the province information by:
       // Split the event.content.respondent.located_in based on a comma, take the second record
-      MERGE (p:CP_Province {uid: SPLIT(TRIM(SPLIT(cr.located_in, ',')[1]), ' ')[0]})
+      MERGE (p:CP_Province {abbr: SPLIT(TRIM(SPLIT(cr.located_in, ',')[1]), ' ')[0]})
 
         // Make the city information by:
         // Split the event.content.respondent.located_in based on a comma, take the first record
@@ -85,7 +86,7 @@ WITH r, c, c['respondent'] AS cr
       // Split based on ( and trim leading/trailing spaces
 
       // Relate respondent to org information
-      MERGE (a:GC_Org {en_name: TRIM(SPLIT(cr.in_department, '(')[0])})
+      MERGE (a:GC_Org {en_name: TRIM(SPLIT(cr.in_department, '(')[0]), is_dept: 'True'})
         MERGE (d)-[:IN_DEPARTMENT]->(a))
 
     // If cr.work_as is not null/empty
@@ -178,7 +179,7 @@ WITH r, c, cq, q, cq['questionAnswer'] AS answer, TOINTEGER(cq['atOrder']) AS at
     SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, TRIM(SPLIT(TRIM(SPLIT(answer, '(')[1]), ')')[0]), apoc.map.get(map, TRIM(SPLIT(TRIM(SPLIT(answer, '(')[1]), ')')[0]), 0) + 1)), q.answer_total = answer_total + 1
     // Make (or update) the GC_Org
     // set the en_name from the questionAnswer, removing the content after the first parenthesis
-    MERGE (a:GC_Org {en_name: TRIM(SPLIT(answer, '(')[0])})
+    MERGE (a:GC_Org {en_name: TRIM(SPLIT(answer, '(')[0]), is_dept: 'True'})
       MERGE (r)-[:AT_ORDER {n: at_order}]->(a)
         MERGE (a)-[:ANSWER_OF]->(q)
   )
@@ -223,7 +224,7 @@ WITH r, c, cq, q, cq['questionAnswer'] AS answer, TOINTEGER(cq['atOrder']) AS at
     SET q.stats = apoc.convert.toJson(apoc.map.setKey(map, TRIM(SPLIT(answer, ',')[0]), apoc.map.get(map, TRIM(SPLIT(answer, ',')[0]), 0) + 1)), q.answer_total = answer_total + 1
     // Make (or update) the GC_Language
     // set the name from the questionAnswer, removing the leading/trailing spaces
-    MERGE (p:CP_Province {uid: SPLIT(TRIM(SPLIT(answer, ',')[1]), ' ')[0]})
+    MERGE (p:CP_Province {abbr: SPLIT(TRIM(SPLIT(answer, ',')[1]), ' ')[0]})
       MERGE (a:CP_CSD {name: TRIM(SPLIT(answer, ',')[0])})
         MERGE (a)-[:CSD_IN_PR]->(p)
           MERGE (r)-[:AT_ORDER {n: at_order}]->(a)

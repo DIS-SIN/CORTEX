@@ -41,7 +41,7 @@ RESPONSE_VALUE_SCHEMA_STR = """
 RESPONSE_VALUE_SCHEMA = avro.loads(RESPONSE_VALUE_SCHEMA_STR)
 
 SURVEYS = {
-    'test_sur': {
+    'TEST_SUR': {
         'survey_evalese': 'data/TEST_SUR_evalese.json',
         'survey_template': 'data/TEST_SUR_template.json',
         'survey_response': 'data/TEST_SUR_responses.json',
