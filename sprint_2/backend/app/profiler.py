@@ -92,6 +92,7 @@ def print_profile_statistics():
                 func_name, data[0], data[2], max_time, avg_time
             )
         )
+    print("----------------------------")
 
 
 def log_profile_statistics(logger):
@@ -111,6 +112,7 @@ def log_profile_statistics(logger):
                 func_name, data[0], data[2], max_time, avg_time
             )
         )
+    logger.info("----------------------------")
 
 
 def clear_prof_data():

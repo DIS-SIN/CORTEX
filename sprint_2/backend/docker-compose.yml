@@ -1,0 +1,92 @@
+version: '3.5'
+
+##############################################################################
+#
+# - [backend] app
+# - jotunheimr
+# - halin
+# all are connected to minir
+#
+##############################################################################
+services:
+
+  ####################
+  # app:
+  #
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    image: app:1.0.0
+    hostname: app
+    container_name: app
+    ports:
+      - 8088:8088
+    depends_on:
+      - jotunheimr
+    networks:
+      - mimir
+    command: ["./wait_for_jotunheimr.sh", "jotunheimr", "python3", "app.py"]
+
+  ####################
+  # jotunheimr:
+  # - Neo4j + ALGO + APOC + GraphQL
+  #
+  jotunheimr:
+    build:
+      context: ./jotunheimr
+      dockerfile: Dockerfile
+    image: neo4j-3.5.8:aag
+    hostname: jotunheimr
+    container_name: jotunheimr
+    ports:
+      - 7474:7474
+      - 7473:7473
+      - 7687:7687
+    networks:
+      - mimir
+    volumes:
+      - ~/neo4j/data:/data
+      - ~/neo4j/import:/import
+      - ~/neo4j/logs:/logs
+    environment:
+      - NEO4J_AUTH=neo4j/##dis@da2019##
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4J_dbms_memory_heap_initial__size=4G
+      - NEO4J_dbms_memory_heap_max__size=4G
+      - NEO4J_dbms_memory_pagecache_size=2G
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,algo.*,graphql.*
+      - NEO4J_dbms_security_allow__csv__import__from__file__urls=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_import_file_use__neo4j__config=true
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_http_timeout_connect=60000
+      - NEO4J_apoc_http_timeout_read=120000
+      - NEO4J_apoc_jobs_pool_num__threads=4
+      - NEO4J_apoc_jobs_schedule_num__threads=4
+      - NEO4J_apoc_spatial_geocode_provider=osm
+      - NEO4J_apoc_spatial_geocode_osm_throttle=5000
+      - NEO4J_dbms_unmanaged__extension__classes=org.neo4j.graphql=/graphql
+
+  ####################
+  # halin
+  #
+  halin:
+    image: mdavidallen/halin:latest
+    hostname: halin
+    container_name: halin
+    ports:
+      - 3000:3000
+    depends_on:
+      - jotunheimr
+    networks:
+      - mimir
+
+################################################################################
+#
+# networks
+#
+################################################################################
+networks:
+  mimir:
+    name: mimir

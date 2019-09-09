@@ -1,0 +1,21 @@
+version: '3.5'
+
+##############################################################################
+#
+# - stanfordnlp
+#
+##############################################################################
+services:
+
+  ####################
+  # stanfordnlp:
+  #
+  stanfordnlp:
+    build:
+      context: ./stanfordnlp
+      dockerfile: Dockerfile
+    image: stanfordnlp:3.9.2
+    hostname: stanfordnlp
+    container_name: stanfordnlp
+    ports:
+      - 9000:9000
