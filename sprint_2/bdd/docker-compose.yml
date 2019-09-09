@@ -1,0 +1,21 @@
+version: '3.5'
+
+##############################################################################
+#
+# - behave
+#
+##############################################################################
+services:
+
+  ####################
+  # behave:
+  #
+  behave:
+    build:
+      context: ./behave
+      dockerfile: Dockerfile
+    image: behave:1.0.0
+    hostname: behave
+    container_name: behave
+    volumes:
+      - ./data:/data
