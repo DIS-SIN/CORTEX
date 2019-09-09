@@ -5,7 +5,7 @@ from time import sleep
 from behave import *
 
 from app_util import send_to_app
-from common_util import get_content, get_md5
+from common_util import get_content, get_md5, http_post
 from neo4j_util import get_apoc_version, find_node_and_relations
 
 
@@ -85,6 +85,10 @@ def step_impl(context, survey_node, question_node):
 #    Given EValhalla Player got items from "0" to "1" of "TEST_SUR_responses"
 #     When EValhalla Player calls "response" service to "store" each of them
 #     Then Neo4j receives them and creates a number of "CSPS_Response" with "CSPS_Respondent" and "CSPS_Answer"
+#     And Survista calls "free_text" service to "extract" each of them
+#     And it calls "free_text" service to "update" each of them
+#     And EValhalla Dashboard calls "metrics" service to "retrieve" each of them
+#     And EValhalla Dashboard calls "sentiment" service to "retrieve" each of them
 #
 @given('EValhalla Player got items from "{lower}" to "{upper}" of "{response}"')
 def step_impl(context, lower, upper, response):
@@ -117,6 +121,49 @@ def step_impl(context, survey_reponse, survey_respondent, survey_answer):
     for response in context.responses:
         c = find_node_and_relations(context, response['md5'], survey_reponse, survey_respondent)
         assert set(c) == {response['md5']}
+
+
+@then('Survista calls "{service}" service to "{operation}" each of them')
+def step_impl(context, service, operation):
+    results = []
+    for response in context.responses:
+        free_text = send_to_app(
+            context,
+            '%s_%s' % (service, operation),
+            json.dumps({'uid': response['md5']})
+        )
+        data = json.loads(free_text)['data']
+        r = http_post(context.nlp_uri, json.dumps([e['text'] for e in data]))
+        response['nlp'] = json.dumps({
+            question['uid']: {
+                'sentimentValue': sentence['sentimentValue'],
+                'sentiment': sentence['sentiment'],
+                'sentimentDistribution': sentence['sentimentDistribution']
+            }
+            for (question, sentence) in zip(data, r['sentences'])
+        })
+
+
+@then('it calls "{service}" service to "{operation}" each of them')
+def step_impl(context, service, operation):
+    for response in context.responses:
+        result = send_to_app(
+            context,
+            '%s_%s' % (service, operation),
+            json.dumps({'uid': response['md5'], 'sentiment': response['nlp']})
+        )
+        assert result == get_md5(response['nlp'])
+
+
+@then('EValhalla Dashboard calls "{service}" service to "{operation}" each of them')
+def step_impl(context, service, operation):
+    for response in context.responses:
+        result = send_to_app(
+            context,
+            '%s_%s' % (service, operation),
+            json.dumps({'uid': response['md5']})
+        )
+        assert result is not None
 #
 #
 ################################################################################

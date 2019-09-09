@@ -27,6 +27,8 @@ services:
     networks:
       - mimir
     command: ["./wait_for_jotunheimr.sh", "jotunheimr", "python3", "app.py"]
+    volumes:
+      - /tmp:/logs
 
   ####################
   # jotunheimr:

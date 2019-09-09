@@ -95,7 +95,7 @@ def execute(adapter):
             continue
 
         tid, cypher, content = in_queue.get()
-        r = adapter.execute_one(work_unit, cypher=cypher, **content)
+        r = adapter.execute_one(work_unit, mode="WRITE_ACCESS", cypher=cypher, **content)
         out_queue_dict[tid].put(r[0]['result'])
 
 

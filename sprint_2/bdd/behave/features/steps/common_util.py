@@ -1,5 +1,6 @@
 import hashlib
 import sys
+import requests
 
 
 def get_content(file_name):
@@ -28,6 +29,12 @@ def get_file_md5(file_name):
 
 def get_file_sha256(file_name):
     return get_sha256(get_content(file_name))
+
+
+def http_post(url, text):
+    r = requests.post(url, data=text)
+    assert r.status_code == 200
+    return r.json()
 
 
 if __name__ == '__main__':
