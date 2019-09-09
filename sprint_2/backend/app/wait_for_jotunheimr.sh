@@ -5,7 +5,7 @@ shift
 cmd="$@"
 
 echo 'Wait for '$host' ...'
-end="$((SECONDS+10))"
+end="$((SECONDS+300))"
 while ! nc -z $host 7474; do
   [[ "${SECONDS}" -ge "${end}" ]] && exit 1
   sleep 1
